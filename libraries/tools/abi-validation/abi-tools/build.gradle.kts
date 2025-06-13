@@ -22,13 +22,6 @@ projectTest {
     jvmArgs("-ea")
 }
 
-tasks.compileTestKotlin {
-    compilerOptions {
-        // fix signatures and binary declarations
-        freeCompilerArgs.add("-Xjvm-default=all-compatibility")
-    }
-}
-
 dependencies {
     api(project(":libraries:tools:abi-validation:abi-tools-api"))
 

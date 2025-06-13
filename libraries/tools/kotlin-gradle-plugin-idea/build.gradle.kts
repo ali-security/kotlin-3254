@@ -1,5 +1,4 @@
-import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import plugins.KotlinBuildPublishingPlugin.Companion.ADHOC_COMPONENT_NAME
 
 plugins {
@@ -72,6 +71,16 @@ apiValidation {
 tasks {
     apiBuild {
         inputJar.value(jar.flatMap { it.archiveFile })
+    }
+}
+
+tasks.named("compileTestFixturesKotlin", KotlinCompile::class.java) {
+    compilerOptions {
+        freeCompilerArgs = freeCompilerArgs.get().toMutableList().also { args ->
+            args.replaceAll {
+                if (it == "-Xjvm-default=disable") "-jvm-default=disable" else it
+            }
+        }
     }
 }
 
