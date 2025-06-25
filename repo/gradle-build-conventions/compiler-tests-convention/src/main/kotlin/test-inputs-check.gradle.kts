@@ -141,6 +141,8 @@ tasks.withType<Test>().names.forEach { taskName ->
                                         """permission java.io.FilePermission "$konanDataDir/-", "read,write,delete,execute";""",
                                         """permission java.io.FilePermission "$konanDataDir", "read";""",
                                         """permission java.io.FilePermission "/bin/sh", "execute";""",
+                                        """permission java.io.FilePermission "/bin/tar", "execute";""",
+                                        """permission java.io.FilePermission "/usr/bin/tar", "execute";""",
                                         """permission java.io.FilePermission "${nativeHome.getOrElse(nativeHomeDefault.get().asFile.absolutePath)}/-" , "read,write,delete";""",
                                         """permission java.net.SocketPermission "download.jetbrains.com:443", "connect,resolve";""", // DependencyDownloader.kt
                                         """permission java.net.SocketPermission "download-cdn.jetbrains.com:443", "connect,resolve";""", // DependencyDownloader.kt
