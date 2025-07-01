@@ -11,10 +11,28 @@ import org.jetbrains.kotlin.fir.declarations.utils.visibility
 import org.jetbrains.kotlin.fir.render
 import org.jetbrains.kotlin.ir.symbols.*
 
-class Fir2IrScopeCache {
+class Fir2IrScopeCache() {
     private val parameterCache = mutableMapOf<FirValueParameter, IrValueParameterSymbol>()
 
+    constructor(
+        parameters: Map<FirValueParameter, IrValueParameterSymbol>,
+        variables: Map<FirVariable, IrVariableSymbol>,
+        localFunctions: Map<FirFunction, IrSimpleFunctionSymbol>,
+        delegatedProperties: Map<FirProperty, IrLocalDelegatedPropertySymbol>,
+    ) : this() {
+        parameterCache.putAll(parameters)
+        variableCache.putAll(variables)
+        localFunctionCache.putAll(localFunctions)
+        delegatedPropertyCache.putAll(delegatedProperties)
+    }
+
+    val parameters: Map<FirValueParameter, IrValueParameterSymbol>
+        get() = parameterCache
+
     private val variableCache = mutableMapOf<FirVariable, IrVariableSymbol>()
+
+    val variables: Map<FirVariable, IrVariableSymbol>
+        get() = variableCache
 
     private val localFunctionCache = mutableMapOf<FirFunction, IrSimpleFunctionSymbol>()
 
@@ -22,6 +40,9 @@ class Fir2IrScopeCache {
         get() = localFunctionCache
 
     private val delegatedPropertyCache = mutableMapOf<FirProperty, IrLocalDelegatedPropertySymbol>()
+
+    val delegatedProperties: Map<FirProperty, IrLocalDelegatedPropertySymbol>
+        get() = delegatedPropertyCache
 
     fun getParameter(parameter: FirValueParameter): IrValueParameterSymbol? {
         return parameterCache[parameter]
@@ -67,12 +88,12 @@ class Fir2IrScopeCache {
 
     fun clone(): Fir2IrScopeCache {
         val thisCache = this
-        return Fir2IrScopeCache().apply {
-            parameterCache.putAll(thisCache.parameterCache)
-            variableCache.putAll(thisCache.variableCache)
-            localFunctionCache.putAll(thisCache.localFunctionCache)
-            delegatedPropertyCache.putAll(thisCache.delegatedPropertyCache)
-        }
+        return Fir2IrScopeCache(
+            thisCache.parameters,
+            thisCache.variableCache,
+            thisCache.localFunctionCache,
+            thisCache.delegatedPropertyCache
+        )
     }
 
     fun clear() {
