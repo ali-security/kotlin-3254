@@ -1237,10 +1237,10 @@ private fun typeStrToCompileTimeType(str: String) = when (str) {
 }
 
 fun evaluateUnary(name: String, typeStr: String, value: Any): Any? =
-    evalUnaryOp(name, typeStrToCompileTimeType(typeStr), value)
+    legacyK1EvalUnaryOp(name, typeStrToCompileTimeType(typeStr), value)
 
 private fun evaluateUnaryAndCheck(name: String, type: CompileTimeType, value: Any, reportIntegerOverflow: () -> Unit): Any? =
-    evalUnaryOp(name, type, value).also { result ->
+    legacyK1EvalUnaryOp(name, type, value).also { result ->
         if (isIntegerType(value) && (name == "minus" || name == "unaryMinus") && value == result && !isZero(value)) {
             reportIntegerOverflow()
         }
@@ -1257,7 +1257,7 @@ fun evaluateBinary(
     val parameterType = typeStrToCompileTimeType(parameterTypeStr)
 
     return try {
-        evalBinaryOp(name, receiverType, receiverValue, parameterType, parameterValue)
+        legacyK1EvalBinaryOp(name, receiverType, receiverValue, parameterType, parameterValue)
     } catch (e: Exception) {
         rethrowIntellijPlatformExceptionIfNeeded(e)
         null
@@ -1273,7 +1273,7 @@ private fun evaluateBinaryAndCheck(
     reportIntegerOverflow: () -> Unit,
 ): Any? {
     val actualResult = try {
-        evalBinaryOp(name, receiverType, receiverValue, parameterType, parameterValue)
+        legacyK1EvalBinaryOp(name, receiverType, receiverValue, parameterType, parameterValue)
     } catch (e: Exception) {
         rethrowIntellijPlatformExceptionIfNeeded(e)
         null
