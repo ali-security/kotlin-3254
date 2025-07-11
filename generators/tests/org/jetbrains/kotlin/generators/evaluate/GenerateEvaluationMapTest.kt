@@ -3,14 +3,14 @@
  * Use of this source code is governed by the Apache 2.0 license that can be found in the license/LICENSE.txt file.
  */
 
-package org.jetbrains.kotlin.generators.test.interpreter
+package org.jetbrains.kotlin.generators.test.evaluate
 
 import junit.framework.TestCase
-import org.jetbrains.kotlin.generators.interpreter.DESTINATION
-import org.jetbrains.kotlin.generators.interpreter.generateMap
+import org.jetbrains.kotlin.generators.evaluate.DESTINATION
+import org.jetbrains.kotlin.generators.evaluate.generateMap
 import org.jetbrains.kotlin.test.KotlinTestUtils
 
-class GenerateInterpreterMapTest : TestCase() {
+class GenerateEvaluationMapTest : TestCase() {
     fun testGeneratedDataIsUpToDate() {
         val text = generateMap()
         KotlinTestUtils.assertEqualsToFile(DESTINATION, text)
