@@ -13,6 +13,8 @@ import kotlin.wasm.internal.kotlinToJsStringAdapter
 @ExperimentalWasmJsInterop
 public actual external class JsString internal constructor() : JsAny
 
+internal external class JsStringRef internal constructor(ref: JsAny) : JsString
+
 @ExperimentalWasmJsInterop
 public actual fun String.toJsString(): JsString =
     kotlinToJsStringAdapter(this)!!
