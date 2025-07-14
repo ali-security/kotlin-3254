@@ -85,8 +85,12 @@ sealed class EvaluationMode {
             *OperatorNameConventions.SIMPLE_BITWISE_OPERATION_NAMES.toTypedArray(),
             OperatorNameConventions.TO_STRING, OperatorNameConventions.EQUALS, OperatorNameConventions.COMPARE_TO,
             *OperatorNameConventions.NUMBER_CONVERSIONS.toTypedArray(),
+            *OperatorNameConventions.UNSIGNED_CONVERSIONS.toTypedArray(),
             Name.identifier("less"), Name.identifier("lessOrEqual"),
             Name.identifier("greater"), Name.identifier("greaterOrEqual"),
+            Name.identifier("inv"),
+            Name.identifier("floorDiv"),
+            Name.identifier("mod"),
         )
 
         private val allowedMethodsOnStrings = setOf(
