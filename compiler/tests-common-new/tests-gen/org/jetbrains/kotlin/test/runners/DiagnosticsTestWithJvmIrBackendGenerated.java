@@ -296,6 +296,12 @@ public class DiagnosticsTestWithJvmIrBackendGenerated extends AbstractDiagnostic
       }
 
       @Test
+      @TestMetadata("bridgeAndFakeOverrideWithErrorEnabled.kt")
+      public void testBridgeAndFakeOverrideWithErrorEnabled() {
+        runTest("compiler/testData/diagnostics/testsWithJvmBackend/duplicateJvmSignature/bridges/bridgeAndFakeOverrideWithErrorEnabled.kt");
+      }
+
+      @Test
       @TestMetadata("class.kt")
       public void testClass() {
         runTest("compiler/testData/diagnostics/testsWithJvmBackend/duplicateJvmSignature/bridges/class.kt");

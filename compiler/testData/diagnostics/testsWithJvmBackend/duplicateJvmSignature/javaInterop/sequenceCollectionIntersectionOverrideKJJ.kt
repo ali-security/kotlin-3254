@@ -1,5 +1,6 @@
 // JDK_KIND: FULL_JDK_21
 // DIAGNOSTICS: -WRONG_NULLABILITY_FOR_JAVA_OVERRIDE
+// LANGUAGE: -ForbidBridgesConflictingWithInheritedMethodsInJvmCode
 // WITH_STDLIB
 
 // FILE: 1.kt

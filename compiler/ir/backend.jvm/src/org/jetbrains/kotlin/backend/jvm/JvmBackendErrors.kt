@@ -6,6 +6,7 @@
 package org.jetbrains.kotlin.backend.jvm
 
 import com.intellij.psi.PsiElement
+import org.jetbrains.kotlin.config.LanguageFeature
 import org.jetbrains.kotlin.diagnostics.*
 import org.jetbrains.kotlin.diagnostics.SourceElementPositioningStrategies.DECLARATION_SIGNATURE_OR_DEFAULT
 import org.jetbrains.kotlin.diagnostics.rendering.BaseDiagnosticRendererFactory
@@ -17,6 +18,10 @@ object JvmBackendErrors : KtDiagnosticsContainer() {
     val CONFLICTING_JVM_DECLARATIONS by error1<PsiElement, String>(DECLARATION_SIGNATURE_OR_DEFAULT)
     val CONFLICTING_INHERITED_JVM_DECLARATIONS by error1<PsiElement, String>(DECLARATION_SIGNATURE_OR_DEFAULT)
     val ACCIDENTAL_OVERRIDE by error1<PsiElement, String>(DECLARATION_SIGNATURE_OR_DEFAULT)
+    val ACCIDENTAL_OVERRIDE_BY_BRIDGE_METHOD by deprecationError1<PsiElement, String>(
+        LanguageFeature.ForbidBridgesConflictingWithInheritedMethodsInJvmCode,
+        DECLARATION_SIGNATURE_OR_DEFAULT
+    )
 
     val TYPEOF_SUSPEND_TYPE by error0<PsiElement>()
     val TYPEOF_NON_REIFIED_TYPE_PARAMETER_WITH_RECURSIVE_BOUND by error1<PsiElement, String>()
@@ -44,6 +49,7 @@ object KtDefaultJvmErrorMessages : BaseDiagnosticRendererFactory() {
     override val MAP by KtDiagnosticFactoryToRendererMap("KT") { map ->
         map.put(JvmBackendErrors.CONFLICTING_JVM_DECLARATIONS, "Platform declaration clash: {0}", STRING)
         map.put(JvmBackendErrors.ACCIDENTAL_OVERRIDE, "Accidental override: {0}", STRING)
+        map.put(JvmBackendErrors.ACCIDENTAL_OVERRIDE_BY_BRIDGE_METHOD, "Accidental override by bridge method: {0}", STRING)
         map.put(JvmBackendErrors.CONFLICTING_INHERITED_JVM_DECLARATIONS, "Inherited platform declarations clash: {0}", STRING)
         map.put(JvmBackendErrors.TYPEOF_SUSPEND_TYPE, "Suspend functional types are not supported in typeOf")
         map.put(JvmBackendErrors.TYPEOF_NON_REIFIED_TYPE_PARAMETER_WITH_RECURSIVE_BOUND, "Non-reified type parameters with recursive bounds are not supported yet: {0}", STRING)
