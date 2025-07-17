@@ -7,13 +7,15 @@ package kotlin.js
 
 import kotlin.wasm.internal.JsPrimitive
 import kotlin.wasm.internal.kotlinToJsStringAdapter
+import kotlin.wasm.internal.ExcludedFromCodegen
 
 /** JavaScript primitive string */
 @JsPrimitive("string")
 @ExperimentalWasmJsInterop
 public actual external class JsString internal constructor() : JsAny
 
-internal external class JsStringRef internal constructor(ref: JsAny) : JsString
+@ExcludedFromCodegen
+internal external class JsStringRef internal constructor() : JsString
 
 @ExperimentalWasmJsInterop
 public actual fun String.toJsString(): JsString =
