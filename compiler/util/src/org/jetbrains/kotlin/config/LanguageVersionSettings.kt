@@ -446,11 +446,11 @@ enum class LanguageFeature(
     ForbidReturnInExpressionBodyWithoutExplicitTypeEdgeCases(KOTLIN_2_4, enabledInProgressiveMode = true, "KTLC-288"),
     CheckOptInOnPureEnumEntries(KOTLIN_2_4, enabledInProgressiveMode = true, "KTLC-359"),
     ForbidExposingPackagePrivateInInternal(KOTLIN_2_4, enabledInProgressiveMode = true, "KTLC-271"),
-    ForbidBridgesConflictingWithInheritedMethodsInJvmCode(KOTLIN_2_4, enabledInProgressiveMode = true, "KT-13712"),
 
     // 2.5
 
     ErrorAboutDataClassCopyVisibilityChange(KOTLIN_2_5, enabledInProgressiveMode = true, "KT-11914"), // KT-11914. Deprecation phase 2
+    ForbidBridgesConflictingWithInheritedMethodsInJvmCode(KOTLIN_2_5, enabledInProgressiveMode = true, "KT-13712"),
 
     // End of 2.* language features --------------------------------------------------
 
