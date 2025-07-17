@@ -19,6 +19,14 @@ abstract class CompilerPluginRegistrar {
             CompilerConfigurationKey.create("Compiler plugin registrars")
     }
 
+    /**
+     * Uniquely identifies the Kotlin compiler plugin. Should match the `pluginId` specified in [CommandLineProcessor].
+     * An empty string (default value) is used to indicate this compiler plugin has no ID.
+     * The ID can be used in combination with `-Xcompiler-plugin-order` to control execution order of compiler plugins.
+     */
+    open val pluginId: String
+        get() = ""
+
     abstract fun ExtensionStorage.registerExtensions(configuration: CompilerConfiguration)
 
     class ExtensionStorage {
