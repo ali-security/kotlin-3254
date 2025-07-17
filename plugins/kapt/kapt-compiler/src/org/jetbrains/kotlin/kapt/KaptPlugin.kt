@@ -163,7 +163,7 @@ class KaptCommandLineProcessor : CommandLineProcessor {
     }
 }
 
-@Suppress("DEPRECATION")
+@Suppress("DEPRECATION_ERROR")
 class KaptComponentRegistrar : ComponentRegistrar {
     override val supportsK2: Boolean
         get() = true
