@@ -5,9 +5,12 @@
 
 package kotlin.js
 
+import kotlin.internal.UsedFromCompiler
+
 
 // Adopted from misc.js
 
+@UsedFromCompiler
 internal fun compareTo(a: dynamic, b: dynamic): Int = when (jsTypeOf(a)) {
     "number" -> when {
         jsTypeOf(b) == "number" ->

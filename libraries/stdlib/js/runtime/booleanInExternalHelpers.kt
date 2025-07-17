@@ -6,16 +6,20 @@
 package kotlin.js
 
 import JsError
+import kotlin.internal.UsedFromCompiler
 
 @JsName("Boolean")
+@UsedFromCompiler
 internal external fun nativeBoolean(obj: Any?): Boolean
 
+@UsedFromCompiler
 internal fun booleanInExternalLog(name: String, obj: dynamic) {
     if (jsTypeOf(obj) != "boolean") {
         console.asDynamic().error("Boolean expected for '$name', but actual:", obj)
     }
 }
 
+@UsedFromCompiler
 internal fun booleanInExternalException(name: String, obj: dynamic) {
     if (jsTypeOf(obj) != "boolean") {
         throw JsError("Boolean expected for '$name', but actual: $obj")

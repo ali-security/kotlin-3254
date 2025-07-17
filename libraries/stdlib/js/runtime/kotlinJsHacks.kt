@@ -5,6 +5,8 @@
 
 package kotlin.js
 
+import kotlin.internal.UsedFromCompiler
+
 @PublishedApi
 internal fun <T : Enum<T>> enumValuesIntrinsic(): Array<T> =
     throw IllegalStateException("Should be replaced by compiler")
@@ -63,6 +65,7 @@ internal annotation class JsOutlinedFunction(val jsFunctionExpression: String, v
  * The annotation is needed for annotating function declarations that should be compiled as ES6 generators
  */
 @Target(AnnotationTarget.FUNCTION)
+@UsedFromCompiler
 internal annotation class JsGenerator
 
 /**
@@ -71,6 +74,7 @@ internal annotation class JsGenerator
  * This information is used for generating special tagged types inside d.ts files, for more strict usage of implicitly exported entities
  */
 @Target(AnnotationTarget.CLASS)
+@UsedFromCompiler
 internal annotation class JsImplicitExport(val couldBeConvertedToExplicitExport: Boolean)
 
 /**

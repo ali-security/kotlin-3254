@@ -5,6 +5,8 @@
 
 package kotlin.js
 
+import kotlin.internal.UsedFromCompiler
+
 @JsPolyfill("""
 (function() {
     if (typeof globalThis === 'object') return; 
@@ -18,4 +20,5 @@ package kotlin.js
     delete Object.prototype.__magic__;
 }());
 """)
+@UsedFromCompiler
 internal external val globalThis: dynamic

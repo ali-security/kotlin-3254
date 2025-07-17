@@ -5,4 +5,7 @@
 
 package kotlin.js
 
+import kotlin.internal.UsedFromCompiler
+
+@UsedFromCompiler
 internal object DefaultConstructorMarker

@@ -5,7 +5,9 @@
 package kotlin.js
 
 import kotlin.Function
+import kotlin.internal.UsedFromCompiler
 
+@UsedFromCompiler
 internal interface FunctionAdapter {
     fun getFunctionDelegate(): Function<*>
 }

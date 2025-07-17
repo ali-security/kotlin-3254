@@ -6,9 +6,11 @@
 package kotlin.js
 
 import kotlin.contracts.contract
+import kotlin.internal.UsedFromCompiler
 
 internal annotation class DoNotIntrinsify
 
+@UsedFromCompiler
 internal fun String.charCodeAt(index: Int): Char = asDynamic().charCodeAt(index)
 
 @PublishedApi

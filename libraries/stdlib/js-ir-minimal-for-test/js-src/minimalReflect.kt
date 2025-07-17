@@ -5,6 +5,7 @@
 
 package kotlin.reflect.js.internal
 
+import kotlin.internal.UsedFromCompiler
 import kotlin.reflect.KClassifier
 import kotlin.reflect.KType
 import kotlin.reflect.KTypeParameter
@@ -24,6 +25,7 @@ internal object DynamicKType : KType {
     override lateinit var arguments: List<KTypeProjection>
 }
 
+@UsedFromCompiler
 internal fun createKType(
     classifier: KClassifier,
     arguments: Array<KTypeProjection>,
@@ -31,10 +33,12 @@ internal fun createKType(
 ) =
     KTypeImpl(classifier, arguments.unsafeCast<List<KTypeProjection>>(), isMarkedNullable)
 
+@UsedFromCompiler
 internal fun createDynamicKType(): KType = DynamicKType
 
 internal fun markKTypeNullable(kType: KType) = KTypeImpl(kType.classifier!!, kType.arguments, true)
 
+@UsedFromCompiler
 internal fun createKTypeParameter(
     name: String,
     upperBounds: Array<KType>,
@@ -51,14 +55,18 @@ internal fun createKTypeParameter(
     return KTypeParameterImpl(name, upperBounds.unsafeCast<List<KType>>(), kVariance, isReified, container)
 }
 
+@UsedFromCompiler
 internal fun getStarKTypeProjection(): KTypeProjection =
     KTypeProjection.STAR
 
+@UsedFromCompiler
 internal fun createCovariantKTypeProjection(type: KType): KTypeProjection =
     KTypeProjection.covariant(type)
 
+@UsedFromCompiler
 internal fun createInvariantKTypeProjection(type: KType): KTypeProjection =
     KTypeProjection.invariant(type)
 
+@UsedFromCompiler
 internal fun createContravariantKTypeProjection(type: KType): KTypeProjection =
     KTypeProjection.contravariant(type)

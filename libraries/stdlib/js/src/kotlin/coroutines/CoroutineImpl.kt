@@ -6,9 +6,11 @@
 package kotlin.coroutines
 
 import kotlin.coroutines.intrinsics.COROUTINE_SUSPENDED
+import kotlin.internal.UsedFromCompiler
 
 @SinceKotlin("1.3")
 @JsName("CoroutineImpl")
+@UsedFromCompiler
 internal abstract class CoroutineImpl(
     private val resultContinuation: Continuation<Any?>?
 ) : InterceptedCoroutine(), Continuation<Any?> {
