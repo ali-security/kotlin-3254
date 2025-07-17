@@ -429,11 +429,10 @@ private fun Appendable.noDeclarationForSymbol(symbol: IrSymbol): Appendable =
                 it.append(" Please check that the project configuration is correct and has consistent versions of all required dependencies.")
                 it.append(" See https://youtrack.jetbrains.com/issue/KT-78063 for more details.")
             } else {
-                it.append(". This looks like a cinterop-generated library issue. It could happen if there is a cinterop dependency")
+                it.append(". This looks like a cinterop-generated library issue. It could happen if there is a transitive dependency which")
+                it.append(" uses cinterop and the resulting libraries are not binary compatible. Or there might be a cinterop dependency")
                 it.append(" generated with a different version of the Kotlin/Native compiler than the version used to compile this binary.")
                 it.append(" Please check that the project configuration is correct and has consistent versions of all required dependencies.")
-                it.append(" It's worth trying to regenerate cinterop dependencies with the same version of")
-                it.append(" the Kotlin/Native compiler that was used for compiling this binary.")
                 it.append(" See https://youtrack.jetbrains.com/issue/KT-78062 for more details.")
             }
         }
