@@ -956,6 +956,7 @@ inside suspend functions and lambdas to distinguish them from user code by debug
 
         lifecycle(
             introducedVersion = KotlinReleaseVersion.v2_1_0,
+            removedVersion = KotlinReleaseVersion.v2_3_0,
         )
     }
 
