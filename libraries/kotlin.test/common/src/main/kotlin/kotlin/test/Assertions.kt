@@ -597,7 +597,7 @@ public inline fun <@OnlyInputTypes T> expect(expected: T, message: String?, bloc
  */
 @InlineOnly
 @JvmName("assertFailsInline")
-public inline fun assertFails(block: () -> Unit): Throwable =
+public inline fun assertFails(block: () -> Any): Throwable =
     checkResultIsFailure(null, runCatching(block))
 
 /**
@@ -611,11 +611,11 @@ public inline fun assertFails(block: () -> Unit): Throwable =
 @SinceKotlin("1.1")
 @InlineOnly
 @JvmName("assertFailsInline")
-public inline fun assertFails(message: String?, block: () -> Unit): Throwable =
+public inline fun assertFails(message: String?, block: () -> Any): Throwable =
     checkResultIsFailure(message, runCatching(block))
 
 @PublishedApi
-internal fun checkResultIsFailure(message: String?, blockResult: Result<Unit>): Throwable {
+internal fun checkResultIsFailure(message: String?, blockResult: Result<Any>): Throwable {
     blockResult.fold(
         onSuccess = {
             asserter.fail(messagePrefix(message) + "Expected an exception to be thrown, but was completed successfully.")
@@ -634,7 +634,7 @@ internal fun checkResultIsFailure(message: String?, blockResult: Result<Unit>): 
  * The returned exception can be inspected further, for example by asserting its property values.
  */
 @InlineOnly
-public inline fun <reified T : Throwable> assertFailsWith(message: String? = null, block: () -> Unit): T =
+public inline fun <reified T : Throwable> assertFailsWith(message: String? = null, block: () -> Any): T =
     assertFailsWith(T::class, message, block)
 
 /**
@@ -645,7 +645,7 @@ public inline fun <reified T : Throwable> assertFailsWith(message: String? = nul
  */
 @InlineOnly
 @JvmName("assertFailsWithInline")
-public inline fun <T : Throwable> assertFailsWith(exceptionClass: KClass<T>, block: () -> Unit): T = assertFailsWith(exceptionClass, null, block)
+public inline fun <T : Throwable> assertFailsWith(exceptionClass: KClass<T>, block: () -> Any): T = assertFailsWith(exceptionClass, null, block)
 
 /**
  * Asserts that a [block] fails with a specific exception of type [exceptionClass] being thrown.
@@ -657,7 +657,7 @@ public inline fun <T : Throwable> assertFailsWith(exceptionClass: KClass<T>, blo
  */
 @InlineOnly
 @JvmName("assertFailsWithInline")
-public inline fun <T : Throwable> assertFailsWith(exceptionClass: KClass<T>, message: String?, block: () -> Unit): T =
+public inline fun <T : Throwable> assertFailsWith(exceptionClass: KClass<T>, message: String?, block: () -> Any): T =
     checkResultIsFailure(exceptionClass, message, runCatching(block))
 
 /** Platform-specific construction of AssertionError with cause */
@@ -771,4 +771,3 @@ public interface AsserterContributor {
      */
     public fun contribute(): Asserter?
 }
-
