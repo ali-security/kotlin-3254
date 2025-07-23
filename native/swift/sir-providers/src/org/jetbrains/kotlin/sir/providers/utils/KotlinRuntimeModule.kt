@@ -30,10 +30,7 @@ public object KotlinRuntimeModule : SirModule() {
     public val kotlinBaseConstructionOptions: SirStruct = buildStruct { // Faux struct representing NS_ENUM(NSUInteger)
         origin = KotlinRuntimeElement()
         name = "KotlinBaseConstructionOptions"
-    }.also { struct ->
-        struct.parent = KotlinRuntimeModule
-        struct.declarations.forEach { it.parent = struct }
-    }
+    }.initializeParentsRecursively(KotlinRuntimeModule)
 
     public val kotlinBaseDesignatedInit: SirInit = buildInit {
         origin = KotlinRuntimeElement()
@@ -68,10 +65,7 @@ public object KotlinRuntimeModule : SirModule() {
                     origin = KotlinRuntimeElement()
                 }
             }.also { it.getter.parent = it }
-        }.also { klass ->
-            klass.parent = KotlinRuntimeModule
-            klass.declarations.forEach { it.parent = klass }
-        }
+        }.initializeParentsRecursively(KotlinRuntimeModule)
     }
 }
 
@@ -83,6 +77,7 @@ public object KotlinRuntimeSupportModule : SirModule() {
         mutableListOf(
             kotlinError,
             kotlinBridged,
+            kotlinBridgeable
         )
     }
 
@@ -97,9 +92,34 @@ public object KotlinRuntimeSupportModule : SirModule() {
         name = "_KotlinBridged"
         visibility = SirVisibility.PUBLIC
         superClass = SirNominalType(KotlinRuntimeModule.kotlinBase)
-    }.also { proto ->
-        proto.parent = KotlinRuntimeSupportModule
-        proto.declarations.forEach { it.parent = proto }
+    }.initializeParentsRecursively(KotlinRuntimeSupportModule)
+
+    public val kotlinBridgeableInit: SirInit = buildInit {
+        origin = KotlinRuntimeElement()
+        isFailable = false
+        isOverride = false
+        parameters.add(
+            SirParameter(
+                argumentName = "__externalRCRefUnsafe",
+                type = SirNominalType(SirSwiftModule.unsafeMutableRawPointer)
+            )
+        )
+
+    }
+
+    public val kotlinBridgeable: SirProtocol by lazy {
+        buildProtocol {
+            name = "_KotlinBridgeable"
+            origin = KotlinRuntimeElement()
+
+            declarations += kotlinBridgeableInit
+
+            declarations += buildFunction {
+                origin = KotlinRuntimeElement()
+                name = "intoRCRefUnsafe"
+                returnType = SirNominalType(SirSwiftModule.unsafeMutableRawPointer)
+            }
+        }.initializeParentsRecursively(KotlinRuntimeSupportModule)
     }
 
     public val kotlinExistential: SirClass = buildClass {
@@ -108,8 +128,11 @@ public object KotlinRuntimeSupportModule : SirModule() {
         visibility = SirVisibility.PUBLIC
         superClass = SirNominalType(KotlinRuntimeModule.kotlinBase)
         protocols.add(kotlinBridged)
-    }.also { declaration ->
-        declaration.parent = KotlinRuntimeSupportModule
-        declaration.declarations.forEach { it.parent = declaration }
-    }
+    }.initializeParentsRecursively(KotlinRuntimeSupportModule)
+}
+
+private fun <T> T.initializeParentsRecursively(parentModule: SirModule): T where T : SirDeclaration, T : SirDeclarationContainer {
+    parent = parentModule
+    declarations.forEach { it.parent = this }
+    return this
 }
