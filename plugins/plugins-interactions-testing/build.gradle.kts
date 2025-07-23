@@ -1,5 +1,3 @@
-description = "Kotlin SamWithReceiver Compiler Plugin"
-
 plugins {
     kotlin("jvm")
     id("jps-compatible")
@@ -12,6 +10,8 @@ dependencies {
     testImplementation(projectTests(":kotlin-lombok-compiler-plugin"))
     testImplementation(projectTests(":kotlin-noarg-compiler-plugin"))
     testImplementation(projectTests(":plugins:parcelize:parcelize-compiler"))
+
+    testImplementation(projectTests(":compiler:tests-integration"))
 
     testImplementation(platform(libs.junit.bom))
     testImplementation(libs.junit.jupiter.api)
@@ -42,6 +42,9 @@ testsJar()
 
 projectTest(jUnitMode = JUnitMode.JUnit5) {
     dependsOn(":dist")
+    dependsOn(":plugins:test-plugins:before:jar")
+    dependsOn(":plugins:test-plugins:middle:jar")
+    dependsOn(":plugins:test-plugins:after:jar")
     useJUnitPlatform()
     workingDir = rootDir
     useJUnitPlatform()
