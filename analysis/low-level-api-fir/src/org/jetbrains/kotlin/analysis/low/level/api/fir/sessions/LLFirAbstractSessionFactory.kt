@@ -32,6 +32,7 @@ import org.jetbrains.kotlin.analysis.low.level.api.fir.symbolProviders.LLKotlinS
 import org.jetbrains.kotlin.analysis.low.level.api.fir.symbolProviders.LLModuleWithDependenciesSymbolProvider
 import org.jetbrains.kotlin.analysis.low.level.api.fir.symbolProviders.combined.LLCombinedJavaSymbolProvider
 import org.jetbrains.kotlin.analysis.low.level.api.fir.symbolProviders.combined.LLCombinedKotlinSymbolProvider
+import org.jetbrains.kotlin.analysis.low.level.api.fir.symbolProviders.combined.LLCombinedPackageDelegationSymbolProvider
 import org.jetbrains.kotlin.analysis.low.level.api.fir.symbolProviders.combined.LLCombinedSyntheticFunctionSymbolProvider
 import org.jetbrains.kotlin.assignment.plugin.AssignmentCommandLineProcessor
 import org.jetbrains.kotlin.assignment.plugin.AssignmentConfigurationKeys
@@ -740,10 +741,13 @@ internal abstract class LLFirAbstractSessionFactory(protected val project: Proje
             // We cannot just merge `LLKotlinSymbolProvider` because not every such symbol provider is a "main" symbol provider, so we could
             // have multiple symbol providers associated with the same module. Combined symbol providers require each `KaModule` to be
             // unique.
-            merge<LLKotlinSymbolProvider>(
-                isApplicable = { it is LLKotlinSourceSymbolProvider || it is LLKotlinStubBasedLibrarySymbolProvider },
-                create = { providers -> LLCombinedKotlinSymbolProvider.merge(session, project, providers) },
-            )
+//            merge<LLKotlinSymbolProvider>(
+//                isApplicable = { it is LLKotlinSourceSymbolProvider || it is LLKotlinStubBasedLibrarySymbolProvider },
+//                create = { providers -> LLCombinedKotlinSymbolProvider.merge(session, project, providers) },
+//            )
+            merge<LLKotlinSourceSymbolProvider> { LLCombinedKotlinSymbolProvider.merge(session, project, it) }
+            // TODO: Document: Why the placement after the source symbol provider but before Java symbol providers?
+            merge<LLKotlinStubBasedLibrarySymbolProvider> { LLCombinedPackageDelegationSymbolProvider.merge(session, it) }
             merge<LLFirJavaSymbolProvider> { LLCombinedJavaSymbolProvider.merge(session, project, it) }
             merge<FirExtensionSyntheticFunctionInterfaceProvider> { LLCombinedSyntheticFunctionSymbolProvider.merge(session, it) }
         }
