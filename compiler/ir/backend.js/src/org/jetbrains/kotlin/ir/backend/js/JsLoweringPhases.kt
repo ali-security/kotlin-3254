@@ -7,7 +7,6 @@ package org.jetbrains.kotlin.ir.backend.js
 
 import org.jetbrains.kotlin.backend.common.LoweringContext
 import org.jetbrains.kotlin.backend.common.ir.Symbols.Companion.isTypeOfIntrinsic
-import org.jetbrains.kotlin.backend.common.ir.isReifiable
 import org.jetbrains.kotlin.backend.common.lower.*
 import org.jetbrains.kotlin.backend.common.lower.coroutines.AddContinuationToLocalSuspendFunctionsLowering
 import org.jetbrains.kotlin.backend.common.lower.coroutines.AddContinuationToNonLocalSuspendFunctionsLowering
@@ -15,7 +14,6 @@ import org.jetbrains.kotlin.backend.common.lower.inline.LocalClassesInInlineLamb
 import org.jetbrains.kotlin.backend.common.lower.loops.ForLoopsLowering
 import org.jetbrains.kotlin.backend.common.phaser.*
 import org.jetbrains.kotlin.config.CompilerConfiguration
-import org.jetbrains.kotlin.config.KlibConfigurationKeys
 import org.jetbrains.kotlin.config.LanguageFeature
 import org.jetbrains.kotlin.config.LanguageVersionSettings
 import org.jetbrains.kotlin.config.languageVersionSettings
@@ -31,7 +29,6 @@ import org.jetbrains.kotlin.ir.backend.js.lower.inline.*
 import org.jetbrains.kotlin.ir.backend.js.lower.serialization.ir.JsManglerIr
 import org.jetbrains.kotlin.ir.backend.js.utils.compileSuspendAsJsGenerator
 import org.jetbrains.kotlin.ir.declarations.IrModuleFragment
-import org.jetbrains.kotlin.ir.expressions.IrFunctionReference
 import org.jetbrains.kotlin.ir.inline.*
 import org.jetbrains.kotlin.ir.interpreter.IrInterpreterConfiguration
 import org.jetbrains.kotlin.platform.js.JsPlatforms
@@ -452,15 +449,21 @@ private val addContinuationToFunctionCallsLoweringPhase = makeIrModulePhase(
     )
 )
 
-private val prepareSuspendFunctionsToExportLowering = makeIrModulePhase(
-    ::PrepareSuspendFunctionsToExportLowering,
-    name = "PrepareSuspendFunctionsToExportLowering",
+private val prepareSuspendFunctionsForExportLowering = makeIrModulePhase(
+    ::PrepareSuspendFunctionsForExportLowering,
+    name = "PrepareSuspendFunctionsForExportLowering",
+)
+
+private val replaceExportedSuspendFunctionCallsWithItsBridge = makeIrModulePhase(
+    ::ReplaceExportedSuspendFunctionsCallsWithTheirBridgeCall,
+    name = "ReplaceExportedSuspendFunctionsCallsWithTheirBridgeCall",
+    prerequisite = setOf(prepareSuspendFunctionsForExportLowering)
 )
 
 private val ignoreOriginalSuspendFunctionsThatWereExportedLowering = makeIrModulePhase(
     ::IgnoreOriginalSuspendFunctionsThatWereExportedLowering,
     name = "IgnoreOriginalSuspendFunctionsThatWereExportedLowering",
-    prerequisite = setOf(prepareSuspendFunctionsToExportLowering)
+    prerequisite = setOf(prepareSuspendFunctionsForExportLowering, replaceExportedSuspendFunctionCallsWithItsBridge)
 )
 
 private val privateMembersLoweringPhase = makeIrModulePhase(
@@ -773,7 +776,8 @@ fun getJsLowerings(
     copyInlineFunctionBodyLoweringPhase,
     removeInlineDeclarationsWithReifiedTypeParametersLoweringPhase,
     replaceSuspendIntrinsicLowering,
-    prepareSuspendFunctionsToExportLowering,
+    prepareSuspendFunctionsForExportLowering,
+    replaceExportedSuspendFunctionCallsWithItsBridge,
     ignoreOriginalSuspendFunctionsThatWereExportedLowering,
     prepareCollectionsToExportLowering,
     preventExportOfSyntheticDeclarationsLowering,
