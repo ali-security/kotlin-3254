@@ -3058,27 +3058,9 @@ public class FirSerializeCompileKotlinAgainstInlineKotlinTestWithInlineScopesGen
       }
 
       @Test
-      @TestMetadata("fakeOverrideFromInterfaceThroughIntermediateClass.kt")
-      public void testFakeOverrideFromInterfaceThroughIntermediateClass() {
-        runTest("compiler/testData/codegen/box/bridges/fakeOverrideFromInterfaceThroughIntermediateClass.kt");
-      }
-
-      @Test
-      @TestMetadata("fakeOverrideMultiFile.kt")
-      public void testFakeOverrideMultiFile() {
-        runTest("compiler/testData/codegen/box/bridges/fakeOverrideMultiFile.kt");
-      }
-
-      @Test
       @TestMetadata("fakeOverrideOfTraitImpl.kt")
       public void testFakeOverrideOfTraitImpl() {
         runTest("compiler/testData/codegen/box/bridges/fakeOverrideOfTraitImpl.kt");
-      }
-
-      @Test
-      @TestMetadata("fakeOverrideThroughGenericSuperclass.kt")
-      public void testFakeOverrideThroughGenericSuperclass() {
-        runTest("compiler/testData/codegen/box/bridges/fakeOverrideThroughGenericSuperclass.kt");
       }
 
       @Test
@@ -6073,12 +6055,6 @@ public class FirSerializeCompileKotlinAgainstInlineKotlinTestWithInlineScopesGen
         }
 
         @Test
-        @TestMetadata("genericProperty.kt")
-        public void testGenericProperty() {
-          runTest("compiler/testData/codegen/box/callableReference/property/genericProperty.kt");
-        }
-
-        @Test
         @TestMetadata("inEnum.kt")
         public void testInEnum() {
           runTest("compiler/testData/codegen/box/callableReference/property/inEnum.kt");
@@ -8909,6 +8885,12 @@ public class FirSerializeCompileKotlinAgainstInlineKotlinTestWithInlineScopesGen
       @TestMetadata("kt65555.kt")
       public void testKt65555() {
         runTest("compiler/testData/codegen/box/collections/kt65555.kt");
+      }
+
+      @Test
+      @TestMetadata("kt72039.kt")
+      public void testKt72039() {
+        runTest("compiler/testData/codegen/box/collections/kt72039.kt");
       }
 
       @Test
@@ -16118,6 +16100,12 @@ public class FirSerializeCompileKotlinAgainstInlineKotlinTestWithInlineScopesGen
         @TestMetadata("kt75926.kt")
         public void testKt75926() {
           runTest("compiler/testData/codegen/box/coroutines/varSpilling/kt75926.kt");
+        }
+
+        @Test
+        @TestMetadata("kt79276.kt")
+        public void testKt79276() {
+          runTest("compiler/testData/codegen/box/coroutines/varSpilling/kt79276.kt");
         }
 
         @Test
@@ -29070,6 +29058,12 @@ public class FirSerializeCompileKotlinAgainstInlineKotlinTestWithInlineScopesGen
       }
 
       @Test
+      @TestMetadata("kt79547_inlineLambdaWithUnderlyingArrayOfObject.kt")
+      public void testKt79547_inlineLambdaWithUnderlyingArrayOfObject() {
+        runTest("compiler/testData/codegen/box/inlineClasses/kt79547_inlineLambdaWithUnderlyingArrayOfObject.kt");
+      }
+
+      @Test
       @TestMetadata("mangledDefaultParameterFunction.kt")
       public void testMangledDefaultParameterFunction() {
         runTest("compiler/testData/codegen/box/inlineClasses/mangledDefaultParameterFunction.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithReal());
@@ -35885,21 +35879,9 @@ public class FirSerializeCompileKotlinAgainstInlineKotlinTestWithInlineScopesGen
         }
 
         @Test
-        @TestMetadata("deepGenericDelegatedProperty.kt")
-        public void testDeepGenericDelegatedProperty() {
-          runTest("compiler/testData/codegen/box/ir/serializationRegressions/deepGenericDelegatedProperty.kt");
-        }
-
-        @Test
         @TestMetadata("dispatchReceiverValue.kt")
         public void testDispatchReceiverValue() {
           runTest("compiler/testData/codegen/box/ir/serializationRegressions/dispatchReceiverValue.kt");
-        }
-
-        @Test
-        @TestMetadata("genericProperty.kt")
-        public void testGenericProperty() {
-          runTest("compiler/testData/codegen/box/ir/serializationRegressions/genericProperty.kt");
         }
 
         @Test
@@ -40285,6 +40267,24 @@ public class FirSerializeCompileKotlinAgainstInlineKotlinTestWithInlineScopesGen
       @TestMetadata("nameBasedDestructuringShortForm.kt")
       public void testNameBasedDestructuringShortForm() {
         runTest("compiler/testData/codegen/box/multiDecl/nameBasedDestructuringShortForm.kt");
+      }
+
+      @Test
+      @TestMetadata("nameBasedDestructuringUnderscoreWithRenaming.kt")
+      public void testNameBasedDestructuringUnderscoreWithRenaming() {
+        runTest("compiler/testData/codegen/box/multiDecl/nameBasedDestructuringUnderscoreWithRenaming.kt");
+      }
+
+      @Test
+      @TestMetadata("positionalDestructuringFullForm.kt")
+      public void testPositionalDestructuringFullForm() {
+        runTest("compiler/testData/codegen/box/multiDecl/positionalDestructuringFullForm.kt");
+      }
+
+      @Test
+      @TestMetadata("positionalDestructuringShortForm.kt")
+      public void testPositionalDestructuringShortForm() {
+        runTest("compiler/testData/codegen/box/multiDecl/positionalDestructuringShortForm.kt");
       }
 
       @Test
@@ -52573,6 +52573,18 @@ public class FirSerializeCompileKotlinAgainstInlineKotlinTestWithInlineScopesGen
         }
 
         @Test
+        @TestMetadata("contextParameters.kt")
+        public void testContextParameters() {
+          runTest("compiler/testData/codegen/box/reflection/call/contextParameters.kt");
+        }
+
+        @Test
+        @TestMetadata("contextParametersSuspend.kt")
+        public void testContextParametersSuspend() {
+          runTest("compiler/testData/codegen/box/reflection/call/contextParametersSuspend.kt");
+        }
+
+        @Test
         @TestMetadata("disallowNullValueForNotNullField.kt")
         public void testDisallowNullValueForNotNullField() {
           runTest("compiler/testData/codegen/box/reflection/call/disallowNullValueForNotNullField.kt");
@@ -53198,6 +53210,18 @@ public class FirSerializeCompileKotlinAgainstInlineKotlinTestWithInlineScopesGen
         @TestMetadata("companionObject.kt")
         public void testCompanionObject() {
           runTest("compiler/testData/codegen/box/reflection/callBy/companionObject.kt");
+        }
+
+        @Test
+        @TestMetadata("contextParameters.kt")
+        public void testContextParameters() {
+          runTest("compiler/testData/codegen/box/reflection/callBy/contextParameters.kt");
+        }
+
+        @Test
+        @TestMetadata("contextParametersSuspend.kt")
+        public void testContextParametersSuspend() {
+          runTest("compiler/testData/codegen/box/reflection/callBy/contextParametersSuspend.kt");
         }
 
         @Test
@@ -55419,6 +55443,12 @@ public class FirSerializeCompileKotlinAgainstInlineKotlinTestWithInlineScopesGen
         }
 
         @Test
+        @TestMetadata("contextParametersGet.kt")
+        public void testContextParametersGet() {
+          runTest("compiler/testData/codegen/box/reflection/properties/contextParametersGet.kt");
+        }
+
+        @Test
         @TestMetadata("declaredVsInheritedProperties.kt")
         public void testDeclaredVsInheritedProperties() {
           runTest("compiler/testData/codegen/box/reflection/properties/declaredVsInheritedProperties.kt");
@@ -56339,6 +56369,18 @@ public class FirSerializeCompileKotlinAgainstInlineKotlinTestWithInlineScopesGen
           @TestMetadata("insideNonInlineLambda_indy.kt")
           public void testInsideNonInlineLambda_indy() {
             runTest("compiler/testData/codegen/box/reflection/typeOf/nonReifiedTypeParameters/insideNonInlineLambda_indy.kt");
+          }
+
+          @Test
+          @TestMetadata("recursiveBoundWithInline.kt")
+          public void testRecursiveBoundWithInline() {
+            runTest("compiler/testData/codegen/box/reflection/typeOf/nonReifiedTypeParameters/recursiveBoundWithInline.kt");
+          }
+
+          @Test
+          @TestMetadata("recursiveBoundWithoutInline.kt")
+          public void testRecursiveBoundWithoutInline() {
+            runTest("compiler/testData/codegen/box/reflection/typeOf/nonReifiedTypeParameters/recursiveBoundWithoutInline.kt");
           }
 
           @Test
@@ -61809,6 +61851,12 @@ public class FirSerializeCompileKotlinAgainstInlineKotlinTestWithInlineScopesGen
       @TestMetadata("genericTypeAliasConstructor_implicitTypeArguments.kt")
       public void testGenericTypeAliasConstructor_implicitTypeArguments() {
         runTest("compiler/testData/codegen/box/typealias/genericTypeAliasConstructor_implicitTypeArguments.kt");
+      }
+
+      @Test
+      @TestMetadata("importNestedTypealiasFromAnotherModule.kt")
+      public void testImportNestedTypealiasFromAnotherModule() {
+        runTest("compiler/testData/codegen/box/typealias/importNestedTypealiasFromAnotherModule.kt");
       }
 
       @Test
