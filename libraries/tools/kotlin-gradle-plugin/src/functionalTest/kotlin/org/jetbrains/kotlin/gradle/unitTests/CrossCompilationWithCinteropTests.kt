@@ -12,7 +12,10 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation
 import org.jetbrains.kotlin.gradle.plugin.PropertiesProvider.PropertyNames.KOTLIN_NATIVE_ENABLE_KLIBS_CROSSCOMPILATION
 import org.jetbrains.kotlin.gradle.plugin.diagnostics.KotlinToolingDiagnostics
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
+import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
+import org.jetbrains.kotlin.gradle.tasks.CInteropProcess
 import org.jetbrains.kotlin.gradle.tasks.KotlinNativeCompile
+import org.jetbrains.kotlin.gradle.tasks.KotlinNativeLink
 import org.jetbrains.kotlin.gradle.util.*
 import org.jetbrains.kotlin.konan.target.HostManager
 import org.jetbrains.kotlin.konan.target.KonanTarget
@@ -26,9 +29,9 @@ class CrossCompilationWithCinteropTests {
     fun `cross compilation with cinterops`() {
         val project = buildProjectWithMPP {
             kotlin {
-                macosX64()
-                linuxX64()
-                mingwX64()
+                listOf(macosX64(), linuxX64(), mingwX64()).forEach { target ->
+                    target.binaries.executable(listOf(NativeBuildType.DEBUG))
+                }
 
                 addDummyCinterop { it.konanTarget == KonanTarget.MACOS_X64 }
                 addDummyCinterop { it.konanTarget == KonanTarget.LINUX_X64 }
@@ -36,13 +39,21 @@ class CrossCompilationWithCinteropTests {
             }
         }.evaluate()
 
-        val compileKotlinMacosX64 = project.tasks.findByName("compileKotlinMacosX64") as? KotlinNativeCompile
-        val compileKotlinMingwX64 = project.tasks.findByName("compileKotlinMingwX64") as? KotlinNativeCompile
-        val compileKotlinLinuxX64 = project.tasks.findByName("compileKotlinLinuxX64") as? KotlinNativeCompile
+        val linkMacosX64 = project.tasks.findByName("linkDebugExecutableMacosX64") as KotlinNativeLink?
+        val linkMingwX64 = project.tasks.findByName("linkDebugExecutableMingwX64") as KotlinNativeLink?
+        val linkLinuxX64 = project.tasks.findByName("linkDebugExecutableLinuxX64") as KotlinNativeLink?
 
-        val cinteropDummyMacosX64 = project.tasks.findByName("cinteropDummyMacosX64")
-        val cinteropDummyLinuxX64 = project.tasks.findByName("cinteropDummyLinuxX64")
-        val cinteropDummyMingwX64 = project.tasks.findByName("cinteropDummyMingwX64")
+        val compileKotlinMacosX64 = project.tasks.findByName("compileKotlinMacosX64") as KotlinNativeCompile?
+        val compileKotlinMingwX64 = project.tasks.findByName("compileKotlinMingwX64") as KotlinNativeCompile?
+        val compileKotlinLinuxX64 = project.tasks.findByName("compileKotlinLinuxX64") as KotlinNativeCompile?
+
+        val cinteropDummyMacosX64 = project.tasks.findByName("cinteropDummyMacosX64") as CInteropProcess?
+        val cinteropDummyLinuxX64 = project.tasks.findByName("cinteropDummyLinuxX64") as CInteropProcess?
+        val cinteropDummyMingwX64 = project.tasks.findByName("cinteropDummyMingwX64") as CInteropProcess?
+
+        assertNotNull(linkMacosX64, "linkDebugExecutableMacosX64 task should be present")
+        assertNotNull(linkMingwX64, "linkDebugExecutableMingwX64 task should be present")
+        assertNotNull(linkLinuxX64, "linkDebugExecutableLinuxX64 task should be present")
 
         assertNotNull(compileKotlinMingwX64, "compileKotlinMingwX64 task should be present")
         assertNotNull(compileKotlinLinuxX64, "compileKotlinLinuxX64 task should be present")
@@ -52,10 +63,21 @@ class CrossCompilationWithCinteropTests {
         assertNotNull(cinteropDummyLinuxX64, "cinteropDummyLinuxX64 task should be present")
         assertNotNull(cinteropDummyMacosX64, "cinteropDummyMacosX64 task should be present")
 
+        assert(linkLinuxX64.crossCompilationSupported.get()) {
+            "linkLinuxX64 task should support cross-compilation"
+        }
+
+        assert(linkMingwX64.crossCompilationSupported.get()) {
+            "linkMingwX64 task should support cross-compilation"
+        }
+
         if (HostManager.hostIsMac) {
             project.assertNoDiagnostics(KotlinToolingDiagnostics.CrossCompilationWithCinterops)
             assert(cinteropDummyMacosX64.enabled) {
                 "cinteropDummyMacosX64 task should be enabled on macOS"
+            }
+            assert(linkMacosX64.crossCompilationSupported.get()) {
+                "linkMacosX64 task should support cross-compilation on macOS"
             }
             assertEquals(
                 true,
@@ -66,6 +88,9 @@ class CrossCompilationWithCinteropTests {
             project.assertContainsDiagnostic(KotlinToolingDiagnostics.CrossCompilationWithCinterops)
             assert(!cinteropDummyMacosX64.enabled) {
                 "cinteropDummyMacosX64 task should be disabled on non-macOS"
+            }
+            assert(!linkMacosX64.crossCompilationSupported.get()) {
+                "linkMacosX64 task should not support cross-compilation on non-macOS"
             }
             assertEquals(
                 false,
