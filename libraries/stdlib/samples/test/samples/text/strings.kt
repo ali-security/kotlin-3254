@@ -824,4 +824,60 @@ class Strings {
         // list is converted to a String first and then concatenated with the "Numbers: " string
         assertEquals("Numbers: [1, 2, 3]", "Numbers: " + listOf(1, 2, 3))
     }
+
+    @Sample
+    fun replaceRangeString() {
+        val text = "Hello, world!"
+
+        // Replacing the range that corresponds to the "world" substring with "Kotlin"
+        assertPrints(text.replaceRange(startIndex = 7, endIndex = 12, replacement = "Kotlin"), "Hello, Kotlin!")
+
+        // Also possible to replace using a Range
+        assertPrints(text.replaceRange(7..11, replacement = "Kotlin"), "Hello, Kotlin!")
+
+        // Empty replacement effectively removes the range
+        assertPrints(text.replaceRange(7..11, ""), "Hello, !")
+
+        // The original string is not changed
+        assertPrints(text, "Hello, world!")
+
+        // Replacing at the beginning of the string
+        assertPrints(text.replaceRange(0, 5, "Hi"), "Hi, world!")
+
+        // Replacing at the end of the string
+        assertPrints(text.replaceRange(7, text.length, "everyone"), "Hello, everyone")
+
+        // Throws if startIndex is greater than endIndex
+        assertFails { text.replaceRange(startIndex = 7, endIndex = 4, replacement = "Kotlin") }
+        // Throws if startIndex or endIndex is out of range of the string indices
+        assertFails { text.replaceRange(startIndex = 7, endIndex = 20, replacement = "Kotlin") }
+    }
+
+    @Sample
+    fun replaceRangeCharSequence() {
+        val text = StringBuilder("Hello, world!")
+
+        // Replacing the range that corresponds to the "world" subsequence with "Kotlin"
+        assertPrints(text.replaceRange(startIndex = 7, endIndex = 12, replacement = "Kotlin"), "Hello, Kotlin!")
+
+        // Also possible to replace using a Range
+        assertPrints(text.replaceRange(7..11, replacement = "Kotlin"), "Hello, Kotlin!")
+
+        // Empty replacement effectively removes the range
+        assertPrints(text.replaceRange(7..11, ""), "Hello, !")
+
+        // The original char sequence is not changed
+        assertPrints(text, "Hello, world!")
+
+        // Replacing at the beginning of the char sequence
+        assertPrints(text.replaceRange(0, 5, "Hi"), "Hi, world!")
+
+        // Replacing at the end of the char sequence
+        assertPrints(text.replaceRange(7, text.length, "everyone"), "Hello, everyone")
+
+        // Throws if startIndex is greater than endIndex
+        assertFails { text.replaceRange(startIndex = 7, endIndex = 4, replacement = "Kotlin") }
+        // Throws if startIndex or endIndex is out of range of the char sequence indices
+        assertFails { text.replaceRange(startIndex = 7, endIndex = 20, replacement = "Kotlin") }
+    }
 }
