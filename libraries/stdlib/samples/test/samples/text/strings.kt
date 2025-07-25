@@ -844,7 +844,6 @@ class Strings {
         // But for the overload accepting the range, range's end is inclusive
         assertPrints(text.replaceRange(7..<text.length, "everyone"), "Hello, everyone")
 
-
         // Throws if startIndex is greater than endIndex
         assertFails { text.replaceRange(startIndex = 7, endIndex = 4, replacement = "Kotlin") }
         // Throws if startIndex or endIndex is out of the string indices range
