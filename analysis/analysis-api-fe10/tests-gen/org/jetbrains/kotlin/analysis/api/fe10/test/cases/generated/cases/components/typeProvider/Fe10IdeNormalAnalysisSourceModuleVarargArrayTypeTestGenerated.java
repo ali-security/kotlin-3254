@@ -64,6 +64,12 @@ public class Fe10IdeNormalAnalysisSourceModuleVarargArrayTypeTestGenerated exten
   }
 
   @Test
+  @TestMetadata("notFirstVarargParameters.kt")
+  public void testNotFirstVarargParameters() {
+    runTest("analysis/analysis-api/testData/components/typeProvider/varargArrayType/notFirstVarargParameters.kt");
+  }
+
+  @Test
   @TestMetadata("nullableIntVarargParameter.kt")
   public void testNullableIntVarargParameter() {
     runTest("analysis/analysis-api/testData/components/typeProvider/varargArrayType/nullableIntVarargParameter.kt");
@@ -91,6 +97,12 @@ public class Fe10IdeNormalAnalysisSourceModuleVarargArrayTypeTestGenerated exten
   @TestMetadata("uIntVarargParameter.kt")
   public void testUIntVarargParameter() {
     runTest("analysis/analysis-api/testData/components/typeProvider/varargArrayType/uIntVarargParameter.kt");
+  }
+
+  @Test
+  @TestMetadata("varargParameterInAnonymousFunction.kt")
+  public void testVarargParameterInAnonymousFunction() {
+    runTest("analysis/analysis-api/testData/components/typeProvider/varargArrayType/varargParameterInAnonymousFunction.kt");
   }
 
   @Test

@@ -180,9 +180,11 @@ public interface KaTypeProvider : KaSessionComponent {
 
     /**
      * If [this] is a [vararg](https://kotlinlang.org/docs/functions.html#variable-number-of-arguments-varargs) parameter,
-     * returns the array type used to represent arguments passed to this parameter.
+     * returns the array type that represents the list of arguments passed to this parameter.
      *
      * If [this] is not a `vararg` parameter, returns `null`.
+     * If [this] is an invalid (e.g., in case of multiple `vararg` parameters) or useless (in anonymous functions) `vararg` parameter,
+     * [varargArrayType] will still return a type for it.
      */
     @KaExperimentalApi
     public val KaValueParameterSymbol.varargArrayType: KaType?
@@ -517,6 +519,15 @@ public val KaType.enhancedTypeOrSelf: KaType?
 context(context: KaTypeProvider)
 public val KaClassifierSymbol.defaultType: KaType
     get() = with(context) { defaultType }
+
+/**
+ * @see KaTypeProvider.varargArrayType
+ */
+@KaExperimentalApi
+@KaContextParameterApi
+context(context: KaTypeProvider)
+public val KaValueParameterSymbol.varargArrayType: KaType?
+    get() = with(context) { varargArrayType }
 
 /**
  * @see KaTypeProvider.commonSupertype
