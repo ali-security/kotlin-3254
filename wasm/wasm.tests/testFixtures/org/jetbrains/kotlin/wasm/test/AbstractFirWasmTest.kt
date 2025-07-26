@@ -35,11 +35,16 @@ import org.jetbrains.kotlin.test.services.EnvironmentConfigurator
 import org.jetbrains.kotlin.test.services.configuration.WasmEnvironmentConfiguratorJs
 import org.jetbrains.kotlin.test.services.configuration.WasmEnvironmentConfiguratorWasi
 import org.jetbrains.kotlin.wasm.test.converters.FirWasmKlibSerializerFacade
+import org.jetbrains.kotlin.wasm.test.converters.SingleModuleType
 import org.jetbrains.kotlin.wasm.test.converters.WasmBackendFacade
+import org.jetbrains.kotlin.wasm.test.converters.WasmBackendSingleModuleFacade
+import org.jetbrains.kotlin.wasm.test.handlers.PrecompiledWasmSaver
 import org.jetbrains.kotlin.wasm.test.handlers.WasiBoxRunner
 import org.jetbrains.kotlin.wasm.test.handlers.WasmBoxRunner
+import org.jetbrains.kotlin.wasm.test.handlers.WasmBoxRunnerWithPrecompiled
 import org.jetbrains.kotlin.wasm.test.handlers.WasmDebugRunner
 import org.jetbrains.kotlin.wasm.test.providers.WasmJsSteppingTestAdditionalSourceProvider
+import org.junit.jupiter.api.Test
 
 abstract class AbstractFirWasmTest(
     targetPlatform: TargetPlatform,
@@ -92,7 +97,6 @@ open class AbstractFirWasmJsTest(
         get() = ::WasmEnvironmentConfiguratorJs
 }
 
-
 open class AbstractFirWasmJsCodegenBoxTest(
     testGroupOutputDirPrefix: String = "codegen/firBox/"
 ) : AbstractFirWasmJsTest(
@@ -110,6 +114,66 @@ open class AbstractFirWasmJsCodegenBoxTest(
         )
     }
 }
+
+abstract class FirWasmJsSingleModuleBase(
+    private val singleModuleType: SingleModuleType,
+    pathToTestDir: String,
+    testGroupOutputDirPrefix: String,
+) : AbstractFirWasmTest(
+    WasmPlatforms.wasmJs,
+    pathToTestDir,
+    testGroupOutputDirPrefix,
+) {
+    override val wasmBoxTestRunner: Constructor<AnalysisHandler<BinaryArtifacts.Wasm>>
+        get() = if (singleModuleType != SingleModuleType.TEST_MODULE) ::PrecompiledWasmSaver else ::WasmBoxRunnerWithPrecompiled
+
+    override val wasmEnvironmentConfigurator: Constructor<EnvironmentConfigurator>
+        get() = ::WasmEnvironmentConfiguratorJs
+
+    override val afterBackendFacade: Constructor<AbstractTestFacade<BinaryArtifacts.KLib, BinaryArtifacts.Wasm>>
+        get() = { services -> WasmBackendSingleModuleFacade(services, singleModuleType) }
+
+    override fun configure(builder: TestConfigurationBuilder) {
+        super.configure(builder)
+        builder.configureFirHandlersStep {
+            commonFirHandlersForCodegenTest()
+        }
+
+        builder.useAfterAnalysisCheckers(
+            ::FirMetaInfoDiffSuppressor
+        )
+    }
+}
+
+class FirWasmJsPrecompiledStdlib : FirWasmJsSingleModuleBase(
+    singleModuleType = SingleModuleType.STDLIB,
+    pathToTestDir = "wasm/wasm.tests/precompile",
+    testGroupOutputDirPrefix = "precompile"
+) {
+    @Test
+    fun compileStdlib() {
+        runTest("wasm/wasm.tests/precompile/stub.kt")
+    }
+}
+
+class FirWasmJsPrecompiledKotlinTest : FirWasmJsSingleModuleBase(
+    singleModuleType = SingleModuleType.KOTLIN_TEST,
+    pathToTestDir = "wasm/wasm.tests/precompile",
+    testGroupOutputDirPrefix = "precompile"
+) {
+    @Test
+    fun compileKotlinTest() {
+        runTest("wasm/wasm.tests/precompile/stub.kt")
+    }
+}
+
+open class AbstractFirWasmJsCodegenSingleModuleBoxTest(
+    testGroupOutputDirPrefix: String = "codegen/firBox/"
+) : FirWasmJsSingleModuleBase(
+    SingleModuleType.TEST_MODULE,
+    pathToTestDir = "compiler/testData/codegen/box/",
+    testGroupOutputDirPrefix = testGroupOutputDirPrefix
+)
 
 open class AbstractFirWasmJsCodegenBoxWithInlinedFunInKlibTest : AbstractFirWasmJsCodegenBoxTest(
     testGroupOutputDirPrefix = "codegen/boxInlKlib/"

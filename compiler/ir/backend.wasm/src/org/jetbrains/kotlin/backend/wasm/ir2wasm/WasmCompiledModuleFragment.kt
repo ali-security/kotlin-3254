@@ -169,7 +169,7 @@ class WasmCompiledModuleFragment(
         }
     }
 
-    fun linkWasmCompiledFragments(moduleImportName: String?, initializeUnit: Boolean, exportThrowableTag: Boolean, initializeStringPool: Boolean): WasmModule {
+    fun linkWasmCompiledFragments(moduleImportName: String?, initializeUnit: Boolean, initializeStringPool: Boolean): WasmModule {
         // TODO: Implement optimal ir linkage KT-71040
         bindUnboundSymbols()
         val canonicalFunctionTypes = bindUnboundFunctionTypes()
@@ -190,10 +190,7 @@ class WasmCompiledModuleFragment(
 
         createAndExportServiceFunctions(definedFunctions, exports, initializeUnit, initializeStringPool)
 
-        val throwableDeclaration = tryFindBuiltInType { it.throwable }
-            ?: compilationException("kotlin.Throwable is not found in fragments", null)
-
-        val tags = getTags(exports, moduleImportName, exportThrowableTag, throwableDeclaration)
+        val tags = getTags()
         require(tags.size <= 1) { "Having more than 1 tag is not supported" }
 
         val (importedTags, definedTags) = tags.partition { it.importPair != null }
@@ -319,7 +316,7 @@ class WasmCompiledModuleFragment(
         return syntheticTypes
     }
 
-    private fun getTags(exports: MutableList<WasmExport<*>>, moduleImportName: String?, exportThrowableTag: Boolean, throwableDeclaration: WasmTypeDeclaration): List<WasmTag> {
+    private fun getTags(): List<WasmTag> {
         if (generateTrapsInsteadOfExceptions) return emptyList()
 
         val tag = if (isWasmJsTarget) {
@@ -330,6 +327,9 @@ class WasmCompiledModuleFragment(
 
             WasmTag(jsExceptionTagFuncType, WasmImportDescriptor("intrinsics", WasmSymbol("tag")))
         } else {
+            val throwableDeclaration = tryFindBuiltInType { it.throwable }
+                ?: compilationException("kotlin.Throwable is not found in fragments", null)
+
             val tagFuncType = WasmRefNullType(WasmHeapType.Type(WasmSymbol(throwableDeclaration)))
 
             val throwableTagFuncType = WasmFunctionType(
@@ -338,10 +338,6 @@ class WasmCompiledModuleFragment(
             )
 
             WasmTag(throwableTagFuncType)
-        }
-
-        if (exportThrowableTag) {
-            exports.add(WasmExport.Tag("tag_throwable", tag))
         }
 
         return listOf(tag)
@@ -499,11 +495,14 @@ class WasmCompiledModuleFragment(
                     ?: fragment.stringPoolFieldInitializer?.let { WasmSymbol(fragment.functions.defined[it]) }
 
                 fragment.objectInstanceFieldInitializers.forEach { objectInitializer ->
-                    val functionSymbol = WasmSymbol(fragment.functions.defined[objectInitializer]!!)
-                    expression.add(
-                        index = 0,
-                        element = WasmInstrWithoutLocation(WasmOp.CALL, listOf(WasmImmediate.FuncIdx(functionSymbol)))
-                    )
+                    val function = fragment.functions.defined[objectInitializer]
+                    if (function != null) {
+                        val functionSymbol = WasmSymbol(function)
+                        expression.add(
+                            index = 0,
+                            element = WasmInstrWithoutLocation(WasmOp.CALL, listOf(WasmImmediate.FuncIdx(functionSymbol)))
+                        )
+                    }
                 }
                 fragment.nonConstantFieldInitializers.forEach { nonConstantInitializer ->
                     val functionSymbol = WasmSymbol(fragment.functions.defined[nonConstantInitializer]!!)

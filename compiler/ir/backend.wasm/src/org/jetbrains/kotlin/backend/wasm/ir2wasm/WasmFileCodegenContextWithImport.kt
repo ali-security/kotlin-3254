@@ -39,7 +39,7 @@ class WasmFileCodegenContextWithImport(
             WasmFunction.Imported(
                 name = declaration.owner.fqNameWhenAvailable.toString(),
                 type = functionTypeSymbol,
-                importPair = WasmImportDescriptor(moduleName, WasmSymbol("$FunctionImportPrefix$signature"))
+                importPair = WasmImportDescriptor(moduleName, WasmSymbol("${WasmImportPrefix.FUNC.prefix}$signature"))
             )
         )
         return true
@@ -53,7 +53,7 @@ class WasmFileCodegenContextWithImport(
             type = WasmRefType(WasmHeapType.Type(referenceVTableGcType(declaration))),
             isMutable = false,
             init = emptyList(),
-            importPair = WasmImportDescriptor(moduleName, WasmSymbol("${TypeGlobalImportPrefix.VTABLE.prefix}$signature"))
+            importPair = WasmImportDescriptor(moduleName, WasmSymbol("${WasmImportPrefix.VTABLE.prefix}$signature"))
         )
         defineGlobalVTable(irClass = declaration, wasmGlobal = global)
         return true
@@ -67,7 +67,7 @@ class WasmFileCodegenContextWithImport(
             type = WasmRefType(WasmHeapType.Type(interfaceTableTypes.wasmAnyArrayType)),
             isMutable = false,
             init = emptyList(),
-            importPair = WasmImportDescriptor(moduleName, WasmSymbol("${TypeGlobalImportPrefix.ITABLE.prefix}$signature"))
+            importPair = WasmImportDescriptor(moduleName, WasmSymbol("${WasmImportPrefix.ITABLE.prefix}$signature"))
         )
         defineGlobalClassITable(irClass = declaration, wasmGlobal = global)
         return true
@@ -81,7 +81,7 @@ class WasmFileCodegenContextWithImport(
             type = WasmRefType(WasmHeapType.Type(rttiType)),
             isMutable = false,
             init = emptyList(),
-            importPair = WasmImportDescriptor(moduleName, WasmSymbol("${TypeGlobalImportPrefix.RTTI.prefix}$signature"))
+            importPair = WasmImportDescriptor(moduleName, WasmSymbol("${WasmImportPrefix.RTTI.prefix}$signature"))
         )
         defineRttiGlobal(global = rttiGlobal, irClass = declaration, irSuperClass = superType)
         return true
