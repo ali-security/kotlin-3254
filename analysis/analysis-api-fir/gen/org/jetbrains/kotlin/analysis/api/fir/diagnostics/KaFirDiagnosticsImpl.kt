@@ -3572,15 +3572,10 @@ internal class BackingFieldForDelegatedPropertyImpl(
     token: KaLifetimeToken,
 ) : KaAbstractFirDiagnostic<KtBackingField>(firDiagnostic, token), KaFirDiagnostic.BackingFieldForDelegatedProperty
 
-internal class PropertyMustHaveGetterImpl(
+internal class InconsistentBackingFieldTypeImpl(
     firDiagnostic: KtPsiDiagnostic,
     token: KaLifetimeToken,
-) : KaAbstractFirDiagnostic<KtProperty>(firDiagnostic, token), KaFirDiagnostic.PropertyMustHaveGetter
-
-internal class PropertyMustHaveSetterImpl(
-    firDiagnostic: KtPsiDiagnostic,
-    token: KaLifetimeToken,
-) : KaAbstractFirDiagnostic<KtProperty>(firDiagnostic, token), KaFirDiagnostic.PropertyMustHaveSetter
+) : KaAbstractFirDiagnostic<KtProperty>(firDiagnostic, token), KaFirDiagnostic.InconsistentBackingFieldType
 
 internal class ExplicitBackingFieldInInterfaceImpl(
     firDiagnostic: KtPsiDiagnostic,
