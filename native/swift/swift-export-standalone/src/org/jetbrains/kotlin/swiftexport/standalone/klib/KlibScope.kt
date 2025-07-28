@@ -17,13 +17,13 @@ context(ka: KaSession)
 internal fun KaLibraryModule.getAllDeclarations(): Sequence<KaDeclarationSymbol> = sequence {
     val addresses = addresses.asSequence()
     yieldAll(addresses.getAllCallables())
-    yieldAll(addresses.getAllClassifier())
+    yieldAll(addresses.getAllClassifiers())
 }
 
 context(ka: KaSession)
-internal fun KaLibraryModule.getAllClassifier(): Sequence<KaDeclarationSymbol> = sequence {
+internal fun KaLibraryModule.getAllClassifiers(): Sequence<KaDeclarationSymbol> = sequence {
     val addresses = addresses.asSequence()
-    yieldAll(addresses.getAllClassifier())
+    yieldAll(addresses.getAllClassifiers())
 }
 
 context(ka: KaSession)
@@ -32,7 +32,7 @@ private fun Sequence<KlibDeclarationAddress>.getAllCallables(): Sequence<KaCalla
         .flatMap { it.getCallableSymbols() }
 
 context(ka: KaSession)
-private fun Sequence<KlibDeclarationAddress>.getAllClassifier(): Sequence<KaClassifierSymbol> =
+private fun Sequence<KlibDeclarationAddress>.getAllClassifiers(): Sequence<KaClassifierSymbol> =
     filterIsInstance<KlibClassifierAddress>()
         .mapNotNull {
             when (it) {

@@ -29,7 +29,7 @@ import org.jetbrains.kotlin.swiftexport.standalone.builders.buildSirSession
 import org.jetbrains.kotlin.swiftexport.standalone.builders.translateModule
 import org.jetbrains.kotlin.swiftexport.standalone.config.SwiftExportConfig
 import org.jetbrains.kotlin.swiftexport.standalone.config.SwiftModuleConfig
-import org.jetbrains.kotlin.swiftexport.standalone.klib.getAllClassifier
+import org.jetbrains.kotlin.swiftexport.standalone.klib.getAllClassifiers
 import org.jetbrains.kotlin.swiftexport.standalone.writer.BridgeSources
 import org.jetbrains.kotlin.utils.addIfNotNull
 import org.jetbrains.sir.printer.SirPrinter
@@ -120,7 +120,7 @@ internal fun translateCrossReferencingModulesTransitively(
                 it.unprocessedReferences.clear()
                 val sirModule = it.sirSession.withSessions {
                     translateModule(module = it.kaModule) { module ->
-                        module.getAllClassifier()
+                        module.getAllClassifiers()
                             .filterIsInstance<KaClassLikeSymbol>()
                             .filter { symbol -> symbol.classId?.asSingleFqName() in it.currentlyProcessing }
                     }
