@@ -70,7 +70,7 @@ abstract class AbstractSignatureParts<TAnnotation : Any> {
         return JavaTypeQualifiers(forErrorsOrWarnings, mutability, isNotNullTypeParameter, forErrorsOrWarnings != forErrors)
     }
 
-    private fun TypeAndDefaultQualifiers.extractQualifiersFromAnnotations(): JavaTypeQualifiers {
+    private fun TypeAndDefaultQualifiers.extractQualifiersFromAnnotations(defaultTypeQualifier: JavaDefaultQualifiers?): JavaTypeQualifiers {
         if (type == null && with(typeSystem) { typeParameterForArgument?.getVariance() } == TypeVariance.IN) {
             // Star projections can only be enhanced in one way: `?` -> `? extends <something>`. Given a Kotlin type `C<in T>
             // (declaration-site variance), this is not a valid enhancement due to conflicting variances.
@@ -104,12 +104,6 @@ abstract class AbstractSignatureParts<TAnnotation : Any> {
             )
         }
 
-        val applicabilityType = when {
-            isHeadTypeConstructor || typeParameterBounds -> containerApplicabilityType
-            else -> AnnotationQualifierApplicabilityType.TYPE_USE
-        }
-        val defaultTypeQualifier = defaultQualifiers?.get(applicabilityType)
-
         val referencedParameterBoundsNullability = typeParameterUse?.boundsNullability
         // For type parameter uses, we have *three* options:
         //   T!! - NOT_NULL, isNotNullTypeParameter = true
@@ -134,6 +128,16 @@ abstract class AbstractSignatureParts<TAnnotation : Any> {
             ?.let { if (it.qualifier == NullabilityQualifier.NULLABLE) it.copy(qualifier = NullabilityQualifier.FORCE_FLEXIBILITY) else it }
         val result = mostSpecific(substitutedParameterBoundsNullability, defaultNullability)
         return JavaTypeQualifiers(result?.qualifier, annotationsMutability, definitelyNotNull, result?.isForWarningOnly == true)
+    }
+
+    private fun TypeAndDefaultQualifiers.extractDefaultQualifier(): JavaDefaultQualifiers? {
+        val isHeadTypeConstructor = typeParameterForArgument == null
+        val typeParameterBounds = containerApplicabilityType == AnnotationQualifierApplicabilityType.TYPE_PARAMETER_BOUNDS
+        val applicabilityType = when {
+            isHeadTypeConstructor || typeParameterBounds -> containerApplicabilityType
+            else -> AnnotationQualifierApplicabilityType.TYPE_USE
+        }
+        return defaultQualifiers?.get(applicabilityType)
     }
 
     protected abstract fun getDefaultNullability(
@@ -209,9 +213,15 @@ abstract class AbstractSignatureParts<TAnnotation : Any> {
         val onlyHeadTypeConstructor = forceOnlyHeadTypeConstructor ||
                 (isCovariant && overrides.any { !this@computeIndexedQualifiers.isEqual(it) })
 
-        val treeSize = if (onlyHeadTypeConstructor) 1 else indexedThisType.size
-        val computedResult = Array(treeSize) { index ->
-            val qualifiers = indexedThisType[index].extractQualifiersFromAnnotations()
+        val computedResult = Array(indexedThisType.size) { index ->
+            val defaultQualifier = indexedThisType[index].extractDefaultQualifier()
+            if (defaultQualifier?.preferQualifierOverSupertype == true) {
+                return@Array indexedThisType[index].extractQualifiersFromAnnotations(defaultQualifier)
+            } else if (index > 0 && onlyHeadTypeConstructor) {
+                return@Array JavaTypeQualifiers.NONE
+            }
+
+            val qualifiers = indexedThisType[index].extractQualifiersFromAnnotations(defaultQualifier)
             val superQualifiers = indexedFromSupertypes.mapNotNull { it.getOrNull(index)?.type?.extractQualifiers() }
             qualifiers.computeQualifiersForOverride(
                 superQualifiers,
