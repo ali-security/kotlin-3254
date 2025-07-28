@@ -438,5 +438,3 @@ data class ObjCBlockPointer(
 ) : ObjCPointer()
 
 object UnsupportedType : Type
-
-data class TypeParameterType(val name: String) : Type

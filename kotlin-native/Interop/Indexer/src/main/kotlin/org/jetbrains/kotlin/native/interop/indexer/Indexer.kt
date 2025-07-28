@@ -570,13 +570,6 @@ public open class NativeIndexImpl(val library: NativeLibrary, val verbose: Boole
 
         if (underlying == UnsupportedType) return underlying
 
-        if (declCursor.kind == CXCursorKind.CXCursor_TemplateTypeParameter) {
-            val typedefDef = typedefRegistry.getOrPut(declCursor) {
-                TypedefDef(TypeParameterType(name), name, getLocation(declCursor))
-            }
-            return Typedef(typedefDef)
-        }
-
         if (clang_getCursorLexicalParent(declCursor).kind != CXCursorKind.CXCursor_TranslationUnit) {
             // Objective-C type parameters are represented as non-top-level typedefs.
             // Erase for now:
