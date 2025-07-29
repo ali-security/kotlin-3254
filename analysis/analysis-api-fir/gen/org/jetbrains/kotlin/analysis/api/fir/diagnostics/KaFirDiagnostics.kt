@@ -2815,11 +2815,11 @@ sealed interface KaFirDiagnostic<PSI : PsiElement> : KaDiagnosticWithPsi<PSI> {
         override val diagnosticClass get() = LateinitPropertyWithoutType::class
     }
 
-    interface MustBeInitialized : KaFirDiagnostic<KtProperty> {
+    interface MustBeInitialized : KaFirDiagnostic<PsiElement> {
         override val diagnosticClass get() = MustBeInitialized::class
     }
 
-    interface MustBeInitializedWarning : KaFirDiagnostic<KtProperty> {
+    interface MustBeInitializedWarning : KaFirDiagnostic<PsiElement> {
         override val diagnosticClass get() = MustBeInitializedWarning::class
     }
 

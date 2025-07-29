@@ -3374,12 +3374,12 @@ internal class LateinitPropertyWithoutTypeImpl(
 internal class MustBeInitializedImpl(
     firDiagnostic: KtPsiDiagnostic,
     token: KaLifetimeToken,
-) : KaAbstractFirDiagnostic<KtProperty>(firDiagnostic, token), KaFirDiagnostic.MustBeInitialized
+) : KaAbstractFirDiagnostic<PsiElement>(firDiagnostic, token), KaFirDiagnostic.MustBeInitialized
 
 internal class MustBeInitializedWarningImpl(
     firDiagnostic: KtPsiDiagnostic,
     token: KaLifetimeToken,
-) : KaAbstractFirDiagnostic<KtProperty>(firDiagnostic, token), KaFirDiagnostic.MustBeInitializedWarning
+) : KaAbstractFirDiagnostic<PsiElement>(firDiagnostic, token), KaFirDiagnostic.MustBeInitializedWarning
 
 internal class MustBeInitializedOrBeFinalImpl(
     firDiagnostic: KtPsiDiagnostic,
