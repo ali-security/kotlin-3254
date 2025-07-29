@@ -61,7 +61,7 @@ import org.jetbrains.kotlin.buildtools.api.arguments.JsArguments.Companion.X_STR
 import org.jetbrains.kotlin.buildtools.api.arguments.JsArguments.Companion.X_TYPED_ARRAYS
 import org.jetbrains.kotlin.cli.common.arguments.K2JSCompilerArguments
 
-public class JsArgumentsImpl : WasmArgumentsImpl(), JsArguments {
+internal class JsArgumentsImpl : WasmArgumentsImpl(), JsArguments {
   private val optionsMap: MutableMap<String, Any?> = mutableMapOf()
 
   @Suppress("UNCHECKED_CAST")
