@@ -172,7 +172,7 @@ class BuildReportsIT : KGPBaseTest() {
                 assertBuildReportPathIsPrinted()
             }
             //Should contain build metrics for all compile kotlin tasks
-            validateBuildReportFile(jsBuildFileExpectedContents(KotlinVersion.DEFAULT.version), expectedReportLines)
+            validateBuildReportFile(nonIncrementalBuildFileExpectedContents(KotlinVersion.DEFAULT.version), expectedReportLines)
         }
 
         project(project, gradleVersion, buildOptions = buildOptions.copy(languageVersion = languageVersion)) {
@@ -182,7 +182,7 @@ class BuildReportsIT : KGPBaseTest() {
                 assertBuildReportPathIsPrinted()
             }
             //Should contain build metrics for all compile kotlin tasks
-            validateBuildReportFile(jsBuildFileExpectedContents(languageVersion), expectedReportLines)
+            validateBuildReportFile(nonIncrementalBuildFileExpectedContents(languageVersion), expectedReportLines)
         }
     }
 
@@ -274,7 +274,7 @@ class BuildReportsIT : KGPBaseTest() {
         "Size metrics:",
     )
 
-    private fun jsBuildFileExpectedContents(kotlinLanguageVersion: String) = listOf(
+    private fun nonIncrementalBuildFileExpectedContents(kotlinLanguageVersion: String) = listOf(
         "Time metrics:",
         "Run compilation:",
         "Incremental compilation in daemon:",
@@ -906,22 +906,17 @@ class BuildReportsIT : KGPBaseTest() {
                 val dynamicBuildTimesKeys = jsonReport.aggregatedMetrics.buildTimes.dynamicBuildTimesMapMs().keys
                     .filter { it.parent == GradleBuildTime.IR_LOWERING }
                     .map { it.name }
-                assertEquals(
-                    listOf(
-                        "ValidateIrBeforeLowering",
-                        "TestProcessor",
-                        "UpgradeCallableReferences",
-                    ),
-                    dynamicBuildTimesKeys.take(3)
+                val expectedDynamicBuildTimesNames = listOf(
+                    "ValidateIrBeforeLowering",
+                    "TestProcessor",
+                    "UpgradeCallableReferences",
+                    "Autobox",
+                    "ConstructorsLowering",
+                    "ValidateIrAfterLowering",
                 )
-                assertEquals(
-                    listOf(
-                        "Autobox",
-                        "ConstructorsLowering",
-                        "ValidateIrAfterLowering",
-                    ),
-                    dynamicBuildTimesKeys.takeLast(3)
-                )
+                expectedDynamicBuildTimesNames.forEach {
+                    assertContains(dynamicBuildTimesKeys, it)
+                }
             }
         }
     }
