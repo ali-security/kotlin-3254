@@ -172,6 +172,9 @@ val cacheMap: Map<String, String> = mapOf(
     "https://d2xrhe97vsfxuc.cloudfront.net" to "https://cache-redirector.jetbrains.com/jetbrains.bintray.com/intellij-jdk",
     "https://androidx.dev/snapshots/builds" to "https://cache-redirector.jetbrains.com/androidx.dev/snapshots/builds",
     "https://repo.gradle.org/gradle/libs-releases" to "https://cache-redirector.jetbrains.com/repo.gradle.org/gradle/libs-releases",
+    "https://redirector.kotlinlang.org/maven/kotlin-dependencies" to "https://cache-redirector.jetbrains.com/redirector.kotlinlang.org/maven/kotlin-dependencies",
+    "https://redirector.kotlinlang.org/maven/bootstrap" to "https://cache-redirector.jetbrains.com/redirector.kotlinlang.org/maven/bootstrap",
+    "https://redirector.kotlinlang.org/maven/kotlin-ide-plugin-dependencies" to "https://cache-redirector.jetbrains.com/redirector.kotlinlang.org/maven/kotlin-ide-plugin-dependencies",
 )
 
 val aliases = mapOf(
@@ -271,9 +274,7 @@ abstract class CheckRepositoriesTask : DefaultTask() {
     private fun URI.isCachedOrLocal() = scheme == "file" ||
             host == "cache-redirector.jetbrains.com" ||
             host == "teamcity.jetbrains.com" ||
-            host == "buildserver.labs.intellij.net" ||
-            host == "packages.jetbrains.team" ||
-            host == "redirector.kotlinlang.org"
+            host == "buildserver.labs.intellij.net"
 
     private fun RepositoryHandler.findNonCachedRepositories(): List<String> {
         val mavenNonCachedRepos = filterIsInstance<MavenArtifactRepository>()
