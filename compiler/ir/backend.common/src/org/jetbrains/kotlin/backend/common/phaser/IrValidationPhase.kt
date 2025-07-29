@@ -60,7 +60,7 @@ class IrValidationAfterInliningOnlyPrivateFunctionsPhase<Context : LoweringConte
         )
 }
 
-class IrValidationAfterInliningAllFunctionsPhase<Context : LoweringContext>(
+class IrValidationAfterInliningAllFunctionsOnTheSecondStagePhase<Context : LoweringContext>(
     context: Context,
     private val checkInlineFunctionCallSites: InlineFunctionUseSiteChecker? = null
 ) : IrValidationPhase<Context>(context) {
@@ -73,6 +73,18 @@ class IrValidationAfterInliningAllFunctionsPhase<Context : LoweringContext>(
             checkVisibilities = context.configuration.enableIrVisibilityChecks,
             checkInlineFunctionUseSites = checkInlineFunctionCallSites,
             checkVarargTypes = context.configuration.enableIrVarargTypesChecks,
+        )
+}
+
+class IrValidationAfterInliningAllFunctionsOnTheFirstStagePhase<Context : LoweringContext>(
+    context: Context,
+    private val checkInlineFunctionCallSites: InlineFunctionUseSiteChecker? = null
+) : IrValidationPhase<Context>(context) {
+    override val defaultValidationConfig: IrValidatorConfig
+        get() = IrValidatorConfig(
+            checkInlineFunctionUseSites = checkInlineFunctionCallSites,
+            checkReceiverForDynamicType = false,
+            checkOverridePrivateDeclaration = false,
         )
 }
 
