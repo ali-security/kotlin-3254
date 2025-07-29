@@ -524,7 +524,13 @@ public class Uuid private constructor(
 internal expect fun serializedUuid(uuid: Uuid): Any
 
 @ExperimentalUuidApi
-internal expect fun secureRandomUuid(): Uuid
+internal fun secureRandomUuid(): Uuid {
+    return uuidFromRandomBytes(ByteArray(Uuid.SIZE_BYTES).also {
+        secureRandomBytes(it)
+    })
+}
+
+internal expect fun secureRandomBytes(destination: ByteArray): Unit
 
 @ExperimentalUuidApi
 internal fun uuidFromRandomBytes(randomBytes: ByteArray): Uuid {
