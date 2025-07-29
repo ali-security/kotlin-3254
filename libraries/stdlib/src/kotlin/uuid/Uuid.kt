@@ -751,44 +751,76 @@ private fun ByteArray.truncateForErrorMessage(maxSize: Int): String {
 
 @OptIn(ExperimentalAtomicApi::class)
 private object UuidV7Generator {
-    // Layout:
+    private const val TIMESTAMP_BIAS_BITS = 16
+    // covers ver and rand_a fields, set ver to 7
+    private const val VERSION_MASK = 0x7000
+    // if counter's highest bit is set to one, we have an overflow
+    private const val OVERFLOW_MASK = 0x8000L
+
+    // Stores both last used timestamp in millis and 12-bit wide counter,
+    // both conveniently separated by 4-bit UUID version.
+    //
+    // Layout:                                          TIMESTAMP_BIAS_BITS
+    //                                                   /
     // 64                                               16   12            0
     //  |----------unix timestamp in milliseconds--------|rdzn|--counter---|
     //  |tttttttttttttttttttttttttttttttttttttttttttttttt|0111|cccccccccccc|
     //
     // Where rdzn (or a red zone) works both as a valid UUID version for UUIDv7 (0b0111)
-    // and works as a counter overflow guard.
+    // and works as an overflow guard.
     private val timestampAndCounter = AtomicLong(0L)
 
+    /**
+     * Generate a new Version 7 [Uuid] using [clock] as a timestamp source.
+     *
+     * Implementation uses a fixed bit-length dedicated counter occupying all 12 bits of rand_a field,
+     * uses a fixed bit-length dedicated counter seeding to (re) initialize a counter and
+     * tracks counter overflows.
+     *
+     * Refer to [RFC-9562, 6.2. Monotonicity and Counters](https://www.rfc-editor.org/rfc/rfc9562.html#section-6.2)
+     * for more details.
+     *
+     * This implementation is thread safe.
+     */
     @OptIn(ExperimentalTime::class)
     @ExperimentalUuidApi
     fun generate(clock: Clock): Uuid {
+        // we need random values for:
+        // - 62 bit random rand_b, which will be placed in the first 8 bytes
+        // - 12 bit random rand_a, which will be placed in the trailing two bytes
         val randomBytes = ByteArray(10).also {
             secureRandomBytes(it)
         }
 
-        val newCounter = randomBytes[9].toInt().and(0x0F).shl(8).or(
-            randomBytes[8].toInt().and(0xFF)
-        ).or(0x7000)
+        // let's keep moderate optimism and initialize re-initialize the counter beforehand
+        val newCounter = randomBytes[8].toInt().and(0x0F).shl(8).or(
+            randomBytes[9].toInt().and(0xFF)
+        ).or(VERSION_MASK)
 
-        var newTimeStampAndCounter: Long = 0xBADBADBADBADBADBUL.toLong()
+        var newTimeStampAndCounter: Long
 
         while (true) {
             val previousTimeStampAndCounter = timestampAndCounter.load()
             val currentTimeMillis = clock.now().toEpochMilliseconds()
 
-            val previousTimeMillis = previousTimeStampAndCounter.ushr(16)
-            if (previousTimeMillis < currentTimeMillis) {
-                newTimeStampAndCounter = currentTimeMillis.shl(16).or(newCounter.toLong())
+            val previousTimeMillis = previousTimeStampAndCounter.ushr(TIMESTAMP_BIAS_BITS)
+
+            if (previousTimeMillis < currentTimeMillis) { // clocks are ticking!
+                // concatenate a new timestamp with a counter value
+                newTimeStampAndCounter = currentTimeMillis.shl(TIMESTAMP_BIAS_BITS).or(newCounter.toLong())
+                // try to save them, retry everything on failure
                 if (timestampAndCounter.compareAndSet(previousTimeStampAndCounter, newTimeStampAndCounter)) {
                     break
                 } // else -> continue
-            } else {
+            } else { // clocks are not ticking :(
+                // increment the counter
                 newTimeStampAndCounter = previousTimeStampAndCounter + 1
-                if (newTimeStampAndCounter.and(0x8000L) != 0L) {
+                // in case of overflow, retry everything again in hope for a new millisecond to come
+                if (newTimeStampAndCounter.and(OVERFLOW_MASK) != 0L) {
                     // counter overflow, let's wait for a new timestamp to come
                     continue
                 }
+                // try to save updated timestamp and counter values, retry everything on failure
                 if (timestampAndCounter.compareAndSet(previousTimeStampAndCounter, newTimeStampAndCounter)) {
                     break
                 }
@@ -801,11 +833,13 @@ private object UuidV7Generator {
         // - followed by version (0b0111)
         // - followed by 12 bit rand_a field
         uuidBytes.setLongAt(0, newTimeStampAndCounter)
-        // The remaining 8 bytes are two-bit variant field (0b10) followed by 62 rand_b bits
-        // Copy all random bytes first
+        // The remaining 8 bytes are two-bit variant field (0b10) followed by 62 rand_b bits.
+        // Copy all random bytes first.
         randomBytes.copyInto(uuidBytes, 8, 0, 8)
-        // And then set the variant field
-        uuidBytes[8] = uuidBytes[8].and(0x3F).or(0x80.toByte())
+        // And then set the variant field.
+        uuidBytes[8] = uuidBytes[8]
+            .and(0x3F) // clear two MSBs
+            .or(0x80.toByte()) // set then to 0b10
         return Uuid.fromByteArray(uuidBytes)
     }
 }
