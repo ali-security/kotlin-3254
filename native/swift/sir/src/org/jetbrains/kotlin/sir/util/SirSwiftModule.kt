@@ -38,6 +38,7 @@ object SirSwiftModule : SirModule() {
 
     val void = struct("Void")
     val never = struct("Never")
+    val anyHashable = struct("AnyHashable")
     val string = struct("String")
 
     val array = struct("Array")

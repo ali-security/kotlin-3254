@@ -48,18 +48,19 @@ public class SirTypeProviderImpl(
             reportErrorType,
             reportUnsupportedType,
             processTypeImports,
-        )
+        ), hashable = false
     )
 
     private fun KaType.translateType(
         ctx: TypeTranslationCtx,
+        hashable: Boolean,
     ): SirType =
-        buildSirType(this@translateType, ctx)
+        buildSirType(this@translateType, hashable, ctx)
             .handleErrors(ctx.reportErrorType, ctx.reportUnsupportedType)
             .handleImports(ctx.processTypeImports)
 
     @OptIn(KaNonPublicApi::class)
-    private fun buildSirType(ktType: KaType, ctx: TypeTranslationCtx): SirType {
+    private fun buildSirType(ktType: KaType, hashable: Boolean, ctx: TypeTranslationCtx): SirType {
         fun buildPrimitiveType(ktType: KaType): SirType? = sirSession.withSessions {
             when {
                 ktType.isCharType -> SirNominalType(SirSwiftModule.utf16CodeUnit)
@@ -86,34 +87,34 @@ public class SirTypeProviderImpl(
         }
 
         fun buildRegularType(kaType: KaType): SirType = sirSession.withSessions {
-            fun KaTypeProjection.sirType(): SirType = when (this) {
-                is KaStarTypeProjection -> SirExistentialType(KotlinRuntimeSupportModule.kotlinBridgeable)
-                is KaTypeArgumentWithVariance -> buildSirType(type, ctx)
+            fun KaTypeProjection.sirType(hashable: Boolean): SirType = when (this) {
+                is KaStarTypeProjection -> if (hashable) SirType.anyHashable else SirExistentialType(KotlinRuntimeSupportModule.kotlinBridgeable)
+                is KaTypeArgumentWithVariance -> buildSirType(type, hashable, ctx)
             }
             when (kaType) {
                 is KaUsualClassType -> {
                     when {
                         kaType.isNothingType -> SirNominalType(SirSwiftModule.never)
                         kaType.isStringType -> SirNominalType(SirSwiftModule.string)
-                        kaType.isAnyType -> SirExistentialType(KotlinRuntimeSupportModule.kotlinBridgeable)
+                        kaType.isAnyType -> if (hashable) SirType.anyHashable else SirExistentialType(KotlinRuntimeSupportModule.kotlinBridgeable)
 
                         kaType.isClassType(StandardClassIds.List) -> {
                             SirArrayType(
-                                kaType.typeArguments.single().sirType()
+                                kaType.typeArguments.single().sirType(hashable = false)
                             )
                         }
 
                         kaType.isClassType(StandardClassIds.Set) -> {
                             SirNominalType(
                                 SirSwiftModule.set,
-                                listOf(kaType.typeArguments.single().sirType())
+                                listOf(kaType.typeArguments.single().sirType(hashable = true))
                             )
                         }
 
                         kaType.isClassType(StandardClassIds.Map) -> {
                             SirDictionaryType(
-                                kaType.typeArguments.first().sirType(),
-                                kaType.typeArguments.last().sirType()
+                                kaType.typeArguments.first().sirType(hashable = true),
+                                kaType.typeArguments.last().sirType(hashable = false)
                             )
                         }
 
@@ -138,12 +139,14 @@ public class SirTypeProviderImpl(
                         return@withSessions SirUnsupportedType
                     } else {
                         SirFunctionalType(
-                            parameterTypes = listOfNotNull(kaType.receiverType?.translateType(ctx)) + kaType.parameterTypes.map { it.translateType(ctx) },
-                            returnType = kaType.returnType.translateType(ctx)
+                            parameterTypes = listOfNotNull(
+                                kaType.receiverType?.translateType(ctx, hashable = false)
+                            ) + kaType.parameterTypes.map { it.translateType(ctx, hashable = false) },
+                            returnType = kaType.returnType.translateType(ctx, hashable = false),
                         ).optionalIfNeeded(kaType)
                     }
                 }
-                is KaTypeParameterType -> ctx.translateTypeParameterType(kaType)
+                is KaTypeParameterType -> ctx.translateTypeParameterType(kaType, hashable)
                 is KaErrorType
                     -> SirErrorType(kaType.errorMessage)
                 else
@@ -156,14 +159,17 @@ public class SirTypeProviderImpl(
             ?: buildRegularType(ktType)
     }
 
-    private fun TypeTranslationCtx.translateTypeParameterType(type: KaTypeParameterType): SirType = sirSession.withSessions {
+    private fun TypeTranslationCtx.translateTypeParameterType(
+        type: KaTypeParameterType,
+        hashable: Boolean,
+    ): SirType = sirSession.withSessions {
         val symbol = type.symbol
         val fallbackType = SirUnsupportedType
         if (symbol.isReified) return@withSessions fallbackType
         return@withSessions when (symbol.upperBounds.size) {
-            0 -> SirExistentialType(KotlinRuntimeSupportModule.kotlinBridgeable).optional()
+            0 -> (if (hashable) SirType.anyHashable else SirExistentialType(KotlinRuntimeSupportModule.kotlinBridgeable)).optional()
             1 -> {
-                val upperBound = symbol.upperBounds.single().translateType(this@translateTypeParameterType)
+                val upperBound = symbol.upperBounds.single().translateType(this@translateTypeParameterType, hashable)
                 if (type.isMarkedNullable) {
                     upperBound.optional()
                 } else {
