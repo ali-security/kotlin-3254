@@ -32685,6 +32685,12 @@ public class FirWasmJsCodegenBoxTestGenerated extends AbstractFirWasmJsCodegenBo
       }
 
       @Test
+      @TestMetadata("backingFieldInitializedInInit.kt")
+      public void testBackingFieldInitializedInInit() {
+        runTest("compiler/testData/codegen/box/properties/backingField/backingFieldInitializedInInit.kt");
+      }
+
+      @Test
       @TestMetadata("backingFieldVisibility.kt")
       public void testBackingFieldVisibility() {
         runTest("compiler/testData/codegen/box/properties/backingField/backingFieldVisibility.kt");
