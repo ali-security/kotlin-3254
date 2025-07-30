@@ -8,6 +8,7 @@ package org.jetbrains.kotlin.sir.providers.utils
 import org.jetbrains.kotlin.sir.*
 import org.jetbrains.kotlin.sir.builder.*
 import org.jetbrains.kotlin.sir.providers.source.KotlinRuntimeElement
+import org.jetbrains.kotlin.sir.providers.utils.KotlinRuntimeModule.kotlinBaseConstructionOptions
 import org.jetbrains.kotlin.sir.util.SirSwiftModule
 
 /**
@@ -32,23 +33,7 @@ public object KotlinRuntimeModule : SirModule() {
         name = "KotlinBaseConstructionOptions"
     }.initializeParentsRecursively(KotlinRuntimeModule)
 
-    public val kotlinBaseDesignatedInit: SirInit = buildInit {
-        origin = KotlinRuntimeElement()
-        isFailable = false
-        isOverride = false
-        parameters.addAll(
-            listOf(
-                SirParameter(
-                    argumentName = "__externalRCRefUnsafe",
-                    type = SirNominalType(SirSwiftModule.unsafeMutableRawPointer).optional()
-                ),
-                SirParameter(
-                    argumentName = "options",
-                    type = SirNominalType(kotlinBaseConstructionOptions)
-                ),
-            )
-        )
-    }
+    public val kotlinBaseDesignatedInit: SirInit = buildKotlinBaseDesignatedInit()
 
     public val kotlinBase: SirClass by lazy {
         buildClass {
@@ -94,18 +79,7 @@ public object KotlinRuntimeSupportModule : SirModule() {
         superClass = SirNominalType(KotlinRuntimeModule.kotlinBase)
     }.initializeParentsRecursively(KotlinRuntimeSupportModule)
 
-    public val kotlinBridgeableInit: SirInit = buildInit {
-        origin = KotlinRuntimeElement()
-        isFailable = false
-        isOverride = false
-        parameters.add(
-            SirParameter(
-                argumentName = "__externalRCRefUnsafe",
-                type = SirNominalType(SirSwiftModule.unsafeMutableRawPointer)
-            )
-        )
-
-    }
+    public val kotlinBridgeableInit: SirInit = buildKotlinBaseDesignatedInit()
 
     public val kotlinBridgeable: SirProtocol by lazy {
         buildProtocol {
@@ -135,4 +109,22 @@ private fun <T> T.initializeParentsRecursively(parentModule: SirModule): T where
     parent = parentModule
     declarations.forEach { it.parent = this }
     return this
+}
+
+private fun buildKotlinBaseDesignatedInit(): SirInit = buildInit {
+    origin = KotlinRuntimeElement()
+    isFailable = false
+    isOverride = false
+    parameters.addAll(
+        listOf(
+            SirParameter(
+                argumentName = "__externalRCRefUnsafe",
+                type = SirNominalType(SirSwiftModule.unsafeMutableRawPointer).optional()
+            ),
+            SirParameter(
+                argumentName = "options",
+                type = SirNominalType(kotlinBaseConstructionOptions)
+            ),
+        )
+    )
 }
