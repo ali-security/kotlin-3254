@@ -11,6 +11,7 @@ package kotlin.wasm.internal
 import kotlin.wasm.internal.reftypes.anyref
 import kotlin.wasm.JsBuiltin
 import kotlin.wasm.WasmExport
+import kotlin.wasm.WasmImport
 import kotlin.wasm.internal.WasmCharArray
 
 internal typealias ExternalInterfaceType = JsAny
@@ -182,8 +183,13 @@ internal fun anyToExternRef(x: Any): ExternalInterfaceType {
 internal fun stringLength(x: ExternalInterfaceType): Int =
     js("x.length")
 
-//@WasmImport("wasm:js-string", "fromCharCodeArray")
-@Suppress("WRONG_JS_INTEROP_TYPE")
+// TODO: remove @WasmImport and "WASM_IMPORT_EXPORT_UNSUPPORTED_RETURN_TYPE", "WASM_IMPORT_EXPORT_UNSUPPORTED_PARAMETER_TYPE" suppresses after bootstrap
+@Suppress(
+    "WRONG_JS_INTEROP_TYPE",
+    "WASM_IMPORT_EXPORT_UNSUPPORTED_RETURN_TYPE",
+    "WASM_IMPORT_EXPORT_UNSUPPORTED_PARAMETER_TYPE"
+)
+@WasmImport("wasm:js-string", "fromCharCodeArray")
 @JsBuiltin(
     "js-string",
     "fromCharCodeArray",
@@ -225,7 +231,9 @@ internal fun jsCheckIsNullOrUndefinedAdapter(x: ExternalInterfaceType?): Externa
     // We deliberately avoid usage of `takeIf` here as type erase on the inlining stage leads to infinite recursion
     if (isNullish(x)) null else x
 
-@Suppress("WRONG_JS_INTEROP_TYPE")
+// TODO: remove @WasmImport and "WASM_IMPORT_EXPORT_UNSUPPORTED_RETURN_TYPE", "WASM_IMPORT_EXPORT_UNSUPPORTED_PARAMETER_TYPE" suppresses after bootstrap
+@Suppress("WRONG_JS_INTEROP_TYPE", "WASM_IMPORT_EXPORT_UNSUPPORTED_PARAMETER_TYPE")
+@WasmImport("wasm:js-string", "intoCharCodeArray")
 @JsBuiltin(
     "js-string",
     "intoCharCodeArray",

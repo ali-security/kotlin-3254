@@ -46,6 +46,48 @@ class DeclarationGenerator(
     private val unitGetInstanceFunction: IrSimpleFunction by lazy { backendContext.findUnitGetInstanceFunction() }
     private val unitPrimaryConstructor: IrConstructor? by lazy { backendContext.irBuiltIns.unitClass.owner.primaryConstructor }
 
+    private val jsStringImpls = mapOf(
+        "intoCharCodeArray" to """const moduleIntoCharCode = new WebAssembly.Module(new Uint8Array([
+  0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00, 0x01, 0x0b, 0x02, 0x5e,
+  0x77, 0x01, 0x60, 0x03, 0x64, 0x00, 0x7f, 0x7f, 0x00, 0x03, 0x02, 0x01,
+  0x01, 0x07, 0x0b, 0x01, 0x07, 0x61, 0x31, 0x36, 0x5f, 0x73, 0x65, 0x74,
+  0x00, 0x00, 0x0a, 0x0d, 0x01, 0x0b, 0x00, 0x20, 0x00, 0x20, 0x01, 0x20,
+  0x02, 0xfb, 0x0e, 0x00, 0x0b, 0x00, 0x13, 0x04, 0x6e, 0x61, 0x6d, 0x65,
+  0x04, 0x0c, 0x01, 0x00, 0x09, 0x61, 0x72, 0x72, 0x61, 0x79, 0x5f, 0x69,
+  0x31, 0x36
+]));
+const helpersIntoCharCode = new WebAssembly.Instance(moduleIntoCharCode).exports;
+
+export function intoCharCodeArray(s, array, start) {
+    start >>>= 0;
+    for (let i = 0; i < s.length; i++) {
+      helpersIntoCharCode.a16_set(array, start + i, s.charCodeAt(i));
+    }
+    return s.length;
+}
+""",
+        "fromCharCodeArray" to """const moduleFromCharCode = new WebAssembly.Module(new Uint8Array([
+  0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00, 0x01, 0x0b, 0x02, 0x5e,
+  0x77, 0x01, 0x60, 0x02, 0x64, 0x00, 0x7f, 0x01, 0x7f, 0x03, 0x02, 0x01,
+  0x01, 0x07, 0x0b, 0x01, 0x07, 0x61, 0x31, 0x36, 0x5f, 0x67, 0x65, 0x74,
+  0x00, 0x00, 0x0a, 0x0b, 0x01, 0x09, 0x00, 0x20, 0x00, 0x20, 0x01, 0xfb,
+  0x0d, 0x00, 0x0b, 0x00, 0x13, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x04, 0x0c,
+  0x01, 0x00, 0x09, 0x61, 0x72, 0x72, 0x61, 0x79, 0x5f, 0x69, 0x31, 0x36
+]));
+const helpersFromCharCode = new WebAssembly.Instance(moduleFromCharCode).exports;
+
+export function fromCharCodeArray(array, start, end) {
+    start >>>= 0;
+    end >>>= 0;
+    let result = [];
+    for (let i = start; i < end; i++) {
+        result.push(String.fromCharCode(helpersFromCharCode.a16_get(array, i)));
+    }
+    return result.join("");
+}
+"""
+    )
+
     override fun visitElement(element: IrElement) {
         error("Unexpected element of type ${element::class}")
     }
@@ -108,6 +150,15 @@ class DeclarationGenerator(
             wasmImportModule != null -> {
                 check(declaration.isExternal) { "Non-external fun with @WasmImport ${declaration.fqNameWhenAvailable}"}
                 wasmFileCodegenContext.addJsModuleImport(declaration.symbol, wasmImportModule.moduleName)
+                // TODO: remove after bootstrap
+                if (wasmImportModule.moduleName == "wasm:js-string") {
+                    wasmFileCodegenContext.addJsBuiltin(
+                        wasmImportModule.declarationName.owner,
+                        jsStringImpls[wasmImportModule.declarationName.owner]
+                            ?: error("No polyfill for ${wasmImportModule.declarationName.owner}")
+                    )
+                    WasmImportDescriptor(wasmImportModule.moduleName, wasmImportModule.declarationName)
+                }
                 wasmImportModule
             }
             jsBuiltin != null -> {
