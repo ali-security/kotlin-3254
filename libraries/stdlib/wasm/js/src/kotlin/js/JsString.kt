@@ -12,9 +12,10 @@ import kotlin.wasm.internal.ExcludedFromCodegen
 /** JavaScript primitive string */
 @JsPrimitive("string")
 @ExperimentalWasmJsInterop
-public actual external class JsString internal constructor() : JsAny
+public actual open external class JsString internal constructor() : JsAny
 
 @ExcludedFromCodegen
+@ExperimentalWasmJsInterop
 internal external class JsStringRef internal constructor() : JsString
 
 @ExperimentalWasmJsInterop

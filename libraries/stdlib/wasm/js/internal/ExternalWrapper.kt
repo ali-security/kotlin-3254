@@ -187,7 +187,8 @@ internal fun stringLength(x: ExternalInterfaceType): Int =
 @Suppress(
     "WRONG_JS_INTEROP_TYPE",
     "WASM_IMPORT_EXPORT_UNSUPPORTED_RETURN_TYPE",
-    "WASM_IMPORT_EXPORT_UNSUPPORTED_PARAMETER_TYPE"
+    "WASM_IMPORT_EXPORT_UNSUPPORTED_PARAMETER_TYPE",
+    "OPT_IN_USAGE"
 )
 @WasmImport("wasm:js-string", "fromCharCodeArray")
 @JsBuiltin(
@@ -232,7 +233,11 @@ internal fun jsCheckIsNullOrUndefinedAdapter(x: ExternalInterfaceType?): Externa
     if (isNullish(x)) null else x
 
 // TODO: remove @WasmImport and "WASM_IMPORT_EXPORT_UNSUPPORTED_RETURN_TYPE", "WASM_IMPORT_EXPORT_UNSUPPORTED_PARAMETER_TYPE" suppresses after bootstrap
-@Suppress("WRONG_JS_INTEROP_TYPE", "WASM_IMPORT_EXPORT_UNSUPPORTED_PARAMETER_TYPE")
+@Suppress(
+    "WRONG_JS_INTEROP_TYPE",
+    "WASM_IMPORT_EXPORT_UNSUPPORTED_PARAMETER_TYPE",
+    "OPT_IN_USAGE"
+)
 @WasmImport("wasm:js-string", "intoCharCodeArray")
 @JsBuiltin(
     "js-string",

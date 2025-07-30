@@ -620,6 +620,7 @@ class WasmSerializer(outputStream: OutputStream) {
             serializeReferencableElements(constantArrayDataSegmentId, { serializePair(it, { serializeList(it, ::serializeLong) }, ::serializeWasmType)}, ::serializeInt)
             serializeMap(jsFuns, ::serializeIdSignature, ::serializeJsCodeSnippet)
             serializeMap(jsModuleImports, ::serializeIdSignature, ::serializeString)
+            serializeMap(jsPolyfills, ::serializeString, ::serializeString)
             serializeList(exports, ::serializeWasmExport)
             serializeNullable(stringPoolSize) { serializeWasmSymbolReadOnly(it, ::serializeInt) }
             serializeList(mainFunctionWrappers, ::serializeIdSignature)

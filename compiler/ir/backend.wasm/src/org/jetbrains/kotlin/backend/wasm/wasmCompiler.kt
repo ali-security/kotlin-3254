@@ -236,8 +236,9 @@ fun compileWasm(
         }.joinToString("\n")
     } else {
         jsUninstantiatedWrapper = null
-        jsWrapper = wasmCompiledModuleFragment.generateAsyncWasiWrapper("./$baseFileName.wasm", linkedModule.exports)
         jsBuiltinsWrapper = null
+        jsWrapper =
+            wasmCompiledModuleFragment.generateAsyncWasiWrapper("./$baseFileName.wasm", linkedModule.exports, useDebuggerCustomFormatters)
     }
 
     return WasmCompilerResult(
