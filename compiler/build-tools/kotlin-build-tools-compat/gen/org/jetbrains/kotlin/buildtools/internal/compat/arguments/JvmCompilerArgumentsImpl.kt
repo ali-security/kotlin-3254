@@ -209,7 +209,7 @@ internal class JvmCompilerArgumentsImpl : CommonCompilerArgumentsImpl(), JvmComp
     this[NO_REFLECT] = arguments.noReflect
     this[SCRIPT_TEMPLATES] = arguments.scriptTemplates
     this[MODULE_NAME] = arguments.moduleName
-    this[JVM_TARGET] = arguments.jvmTarget?.let { JvmTarget.valueOf(it) }
+    this[JVM_TARGET] = arguments.jvmTarget?.let { JvmTarget.entries.first { entry -> entry.stringValue == it } }
     this[JAVA_PARAMETERS] = arguments.javaParameters
     this[JVM_DEFAULT] = arguments.jvmDefaultStable
     this[X_ALLOW_UNSTABLE_DEPENDENCIES] = arguments.allowUnstableDependencies

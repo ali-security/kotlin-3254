@@ -72,6 +72,7 @@ internal class JvmCompilationOperationImpl(
         this[INCREMENTAL_COMPILATION] = null
         this[LOOKUP_TRACKER] = null
         this[KOTLINSCRIPT_EXTENSIONS] = null
+        this[COMPILER_ARGUMENTS_LOG_LEVEL] = "debug"
     }
 
     @UseFromImplModuleRestricted
@@ -218,6 +219,7 @@ internal class JvmCompilationOperationImpl(
         val aggregatedIcConfiguration = get(INCREMENTAL_COMPILATION) as? JvmSnapshotBasedIncrementalCompilationConfiguration
         val aggregatedIcConfigurationOptions = aggregatedIcConfiguration?.options as? JvmSnapshotBasedIncrementalCompilationOptionsImpl
         val rootProjectDir = aggregatedIcConfigurationOptions?.get(ROOT_PROJECT_DIR)
+        logCompilerArguments(loggerAdapter, arguments, get(COMPILER_ARGUMENTS_LOG_LEVEL))
         val exitCode = daemon.compile(
             sessionId,
             arguments.toArgumentStrings().toTypedArray(),
@@ -300,6 +302,7 @@ internal class JvmCompilationOperationImpl(
                 })
             }
         }.build()
+        logCompilerArguments(loggerAdapter, arguments, get(COMPILER_ARGUMENTS_LOG_LEVEL))
         return compiler.exec(loggerAdapter, services, arguments).asCompilationResult
     }
 
@@ -347,6 +350,7 @@ internal class JvmCompilationOperationImpl(
             }
 
         arguments.incrementalCompilation = true
+        logCompilerArguments(loggerAdapter, arguments, get(COMPILER_ARGUMENTS_LOG_LEVEL))
         return incrementalCompiler.compile(
             kotlinSources,
             arguments,
@@ -359,12 +363,30 @@ internal class JvmCompilationOperationImpl(
         ).asCompilationResult
     }
 
+    private fun logCompilerArguments(
+        loggerAdapter: KotlinLoggerMessageCollectorAdapter,
+        arguments: K2JVMCompilerArguments,
+        argumentsLogLevel: String,
+    ) {
+        with(loggerAdapter.kotlinLogger) {
+            val message = "Kotlin compiler args: ${arguments.toArgumentStrings().joinToString(" ")}"
+            when (argumentsLogLevel) {
+                "error" -> error(message)
+                "warning" -> warn(message)
+                "info" -> info(message)
+                "debug" -> debug(message)
+            }
+        }
+    }
+
     companion object {
         val INCREMENTAL_COMPILATION: Option<JvmIncrementalCompilationConfiguration?> = Option("INCREMENTAL_COMPILATION")
 
         val LOOKUP_TRACKER: Option<CompilerLookupTracker?> = Option("LOOKUP_TRACKER")
 
         val KOTLINSCRIPT_EXTENSIONS: Option<Array<String>?> = Option("KOTLINSCRIPT_EXTENSIONS")
+
+        val COMPILER_ARGUMENTS_LOG_LEVEL: Option<String> = Option("COMPILER_ARGUMENTS_LOG_LEVEL")
     }
 }
 

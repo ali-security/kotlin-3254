@@ -187,8 +187,8 @@ internal open class CommonCompilerArgumentsImpl : CommonToolArgumentsImpl(),
   @Suppress("DEPRECATION")
   public fun applyCompilerArguments(arguments: CommonCompilerArguments) {
     super.applyCompilerArguments(arguments)
-    this[LANGUAGE_VERSION] = arguments.languageVersion?.let { KotlinVersion.valueOf(it) }
-    this[API_VERSION] = arguments.apiVersion?.let { KotlinVersion.valueOf(it) }
+    this[LANGUAGE_VERSION] = arguments.languageVersion?.let { KotlinVersion.entries.first { entry -> entry.stringValue == it } }
+    this[API_VERSION] = arguments.apiVersion?.let { KotlinVersion.entries.first { entry -> entry.stringValue == it } }
     this[KOTLIN_HOME] = arguments.kotlinHome
     this[PROGRESSIVE] = arguments.progressiveMode
     this[OPT_IN] = arguments.optIn
@@ -221,8 +221,8 @@ internal open class CommonCompilerArgumentsImpl : CommonToolArgumentsImpl(),
     this[X_USE_FIR_LT] = arguments.useFirLT
     this[X_METADATA_KLIB] = arguments.metadataKlib
     this[X_DISABLE_DEFAULT_SCRIPTING_PLUGIN] = arguments.disableDefaultScriptingPlugin
-    this[X_EXPLICIT_API] = arguments.explicitApi.let { ExplicitApiMode.valueOf(it) }
-    this[X_RETURN_VALUE_CHECKER] = arguments.returnValueChecker.let { ReturnValueCheckerMode.valueOf(it) }
+    this[X_EXPLICIT_API] = arguments.explicitApi.let { ExplicitApiMode.entries.first { entry -> entry.stringValue == it } }
+    this[X_RETURN_VALUE_CHECKER] = arguments.returnValueChecker.let { ReturnValueCheckerMode.entries.first { entry -> entry.stringValue == it } }
     this[X_SUPPRESS_VERSION_WARNINGS] = arguments.suppressVersionWarnings
     this[X_SUPPRESS_API_VERSION_GREATER_THAN_LANGUAGE_VERSION_ERROR] = arguments.suppressApiVersionGreaterThanLanguageVersionError
     this[X_EXPECT_ACTUAL_CLASSES] = arguments.expectActualClasses

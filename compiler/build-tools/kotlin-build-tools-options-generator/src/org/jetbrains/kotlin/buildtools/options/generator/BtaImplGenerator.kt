@@ -149,7 +149,7 @@ class BtaImplGenerator(private val targetPackage: String) : BtaGenerator {
                         member
                     )
                     applyCompilerArgumentsFun.addStatement(
-                        "this[%M] = arguments.%N${if (argument.valueType.isNullable.current) "?" else ""}.let { %T.valueOf(it) }",
+                        "this[%M] = arguments.%N${if (argument.valueType.isNullable.current) "?" else ""}.let { %T.entries.first { entry -> entry.stringValue == it } }",
                         member,
                         argument.calculateName(),
                         argumentTypeParameter.copy(nullable = false)
