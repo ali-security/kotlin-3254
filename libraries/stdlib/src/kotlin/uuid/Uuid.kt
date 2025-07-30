@@ -559,8 +559,8 @@ public class Uuid private constructor(
          * See the list below for details about the API used for producing the random uuid in each supported target.
          *
          * Note that the returned uuid is not recommended for use for cryptographic purposes.
-         * Because version 4 uuid has a partially predictable bit pattern, and utilizes at most
-         * 122 bits of entropy, regardless of platform.
+         * Because version 7 uuid has a partially predictable bit pattern, and utilizes at most
+         * 74 bits of entropy, regardless of platform.
          *
          * The following APIs are used for producing the random uuid in each of the supported targets:
          *   - Kotlin/JVM - [java.security.SecureRandom](https://docs.oracle.com/javase/8/docs/api/java/security/SecureRandom.html)
