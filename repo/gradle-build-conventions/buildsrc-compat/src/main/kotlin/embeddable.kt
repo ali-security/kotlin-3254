@@ -16,7 +16,6 @@ const val kotlinEmbeddableRootPackage = "org.jetbrains.kotlin"
 
 val packagesToRelocate =
     listOf(
-        "com.google",
         "com.sampullara",
         "org.apache",
         "org.jdom",
@@ -66,6 +65,9 @@ private fun ShadowJar.configureEmbeddableCompilerRelocation(withJavaxInject: Boo
     }
     packagesToRelocate.forEach {
         relocate(it, "$kotlinEmbeddableRootPackage.$it")
+    }
+    relocate("com.google", "$kotlinEmbeddableRootPackage.com.google") {
+        exclude("com.google.errorprone.annotations")
     }
     if (withJavaxInject) {
         relocate("javax.inject", "$kotlinEmbeddableRootPackage.javax.inject")
