@@ -1,9 +1,8 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
-
 plugins {
     kotlin("jvm")
     id("jps-compatible")
     id("gradle-plugin-compiler-dependency-configuration")
+    id("compiler-tests-convention")
 }
 
 description = "Standalone Runner for Swift Export"
@@ -49,9 +48,11 @@ sourceSets {
     }
 }
 
-val testTags = findProperty("kotlin.native.tests.tags")?.toString()
-val test by nativeTest("test", testTags) {
-    dependsOn(":kotlin-native:distInvalidateStaleCaches")
+compilerTests {
+    val testTags = findProperty("kotlin.native.tests.tags")?.toString()
+    nativeTestTask("test", testTags) {
+        dependsOn(":kotlin-native:distInvalidateStaleCaches")
+    }
 }
 
 publish()

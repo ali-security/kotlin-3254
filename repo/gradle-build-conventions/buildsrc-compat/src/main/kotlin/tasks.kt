@@ -100,10 +100,6 @@ fun Task.dependsOnKotlinGradlePluginPublish() {
         }
 }
 
-fun Test.enableJunit5ExtensionsAutodetection() {
-    systemProperty("junit.jupiter.extensions.autodetection.enabled", "true")
-}
-
 private inline fun String.isFirstChar(f: (Char) -> Boolean) = isNotEmpty() && f(first())
 
 fun Project.confugureFirPluginAnnotationsDependency(testTask: TaskProvider<Test>) {

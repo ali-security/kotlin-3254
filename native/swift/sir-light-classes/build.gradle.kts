@@ -1,6 +1,7 @@
 plugins {
     kotlin("jvm")
     id("jps-compatible")
+    id("compiler-tests-convention")
 }
 
 description = "Implementation of SwiftIR backed by Analysis API"
@@ -27,8 +28,10 @@ dependencies {
     testImplementation(testFixtures(project(":compiler:tests-common")))
 }
 
-nativeTest("test", null) {
-    dependsOn(":kotlin-native:distInvalidateStaleCaches")
+compilerTests {
+    nativeTestTask("test", tag = null) {
+        dependsOn(":kotlin-native:distInvalidateStaleCaches")
+    }
 }
 
 sourceSets {
