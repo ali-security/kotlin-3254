@@ -13,15 +13,13 @@ import org.jetbrains.kotlin.ir.declarations.IrDeclarationWithVisibility
 import org.jetbrains.kotlin.ir.declarations.IrOverridableDeclaration
 import org.jetbrains.kotlin.ir.util.render
 
-object IrPrivateDeclarationOverrideChecker : IrElementChecker<IrDeclaration>(IrDeclaration::class) {
-    override fun check(element: IrDeclaration, context: CheckerContext) {
-        if (element is IrOverridableDeclaration<*>) {
-            for (overriddenSymbol in element.overriddenSymbols) {
-                if (!overriddenSymbol.isBound) continue
-                val overriddenDeclaration = overriddenSymbol.owner as? IrDeclarationWithVisibility ?: continue
-                if (overriddenDeclaration.visibility == DescriptorVisibilities.PRIVATE) {
-                    context.error(element, "Overrides private declaration ${overriddenDeclaration.render()}")
-                }
+object IrPrivateDeclarationOverrideChecker : IrElementChecker<IrOverridableDeclaration<*>>(IrOverridableDeclaration::class) {
+    override fun check(element: IrOverridableDeclaration<*>, context: CheckerContext) {
+        for (overriddenSymbol in element.overriddenSymbols) {
+            if (!overriddenSymbol.isBound) continue
+            val overriddenDeclaration = overriddenSymbol.owner as? IrDeclarationWithVisibility ?: continue
+            if (overriddenDeclaration.visibility == DescriptorVisibilities.PRIVATE) {
+                context.error(element, "Overrides private declaration ${overriddenDeclaration.render()}")
             }
         }
     }
