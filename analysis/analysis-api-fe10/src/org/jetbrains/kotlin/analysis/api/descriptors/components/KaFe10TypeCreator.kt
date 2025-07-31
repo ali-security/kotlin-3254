@@ -87,34 +87,6 @@ internal class KaFe10TypeCreator(
         return KaFe10UsualClassType(typeWithNullability as SimpleType, descriptor, analysisContext)
     }
 
-    override fun buildArrayType(
-        elementType: KaType,
-        init: KaArrayTypeBuilder.() -> Unit,
-    ): KaType = withValidityAssertion {
-        with(analysisSession) {
-            val builder = KaBaseArrayTypeBuilder.ByElementType(elementType, token).apply(init)
-
-            val builderElementType = builder.elementType
-
-            if (builderElementType is KaClassType && builder.shouldPreferPrimitiveTypes && !builderElementType.isMarkedNullable) {
-                val classId = builderElementType.classId
-                val primitiveArrayId =
-                    StandardClassIds.primitiveArrayTypeByElementType[classId]
-                        ?: StandardClassIds.unsignedArrayTypeByElementType[classId]
-                if (primitiveArrayId != null) {
-                    return buildClassType(primitiveArrayId) {
-                        isMarkedNullable = builder.isMarkedNullable
-                    }
-                }
-            }
-
-            return buildClassType(StandardClassIds.Array) {
-                isMarkedNullable = builder.isMarkedNullable
-                argument(builderElementType, builder.variance)
-            }
-        }
-    }
-
     override fun buildTypeParameterType(symbol: KaTypeParameterSymbol, init: KaTypeParameterTypeBuilder.() -> Unit): KaTypeParameterType {
         withValidityAssertion {
             val builder = KaBaseTypeParameterTypeBuilder.BySymbol(symbol, token).apply(init)

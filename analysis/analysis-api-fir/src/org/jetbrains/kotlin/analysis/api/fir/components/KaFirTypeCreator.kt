@@ -17,6 +17,7 @@ import org.jetbrains.kotlin.analysis.api.impl.base.components.KaBaseTypeParamete
 import org.jetbrains.kotlin.analysis.api.lifetime.withValidityAssertion
 import org.jetbrains.kotlin.analysis.api.symbols.KaClassLikeSymbol
 import org.jetbrains.kotlin.analysis.api.symbols.KaTypeParameterSymbol
+import org.jetbrains.kotlin.analysis.api.types.KaClassType
 import org.jetbrains.kotlin.analysis.api.types.KaType
 import org.jetbrains.kotlin.analysis.api.types.KaTypeParameterType
 import org.jetbrains.kotlin.fir.resolve.diagnostics.ConeUnresolvedSymbolError
@@ -24,6 +25,7 @@ import org.jetbrains.kotlin.fir.resolve.providers.symbolProvider
 import org.jetbrains.kotlin.fir.scopes.impl.toConeType
 import org.jetbrains.kotlin.fir.types.*
 import org.jetbrains.kotlin.name.ClassId
+import org.jetbrains.kotlin.name.StandardClassIds
 
 internal class KaFirTypeCreator(
     override val analysisSessionProvider: () -> KaFirSession,
@@ -57,20 +59,6 @@ internal class KaFirTypeCreator(
         ) as ConeClassLikeType
 
         return coneType.asKaType()
-    }
-
-    override fun buildArrayType(
-        elementType: KaType,
-        init: KaArrayTypeBuilder.() -> Unit,
-    ): KaType = withValidityAssertion {
-        val builder = KaBaseArrayTypeBuilder.ByElementType(elementType, token).apply(init)
-
-        val coneType = builder.elementType.coneType.toTypeProjection(builder.variance)
-
-        return coneType.createArrayType(
-            nullable = builder.isMarkedNullable,
-            createPrimitiveArrayTypeIfPossible = builder.shouldPreferPrimitiveTypes
-        ).asKaType()
     }
 
     override fun buildTypeParameterType(symbol: KaTypeParameterSymbol, init: KaTypeParameterTypeBuilder.() -> Unit): KaTypeParameterType {
