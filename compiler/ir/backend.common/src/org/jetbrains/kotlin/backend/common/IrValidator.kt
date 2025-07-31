@@ -95,7 +95,7 @@ private class IrFileValidator(
     config: IrValidatorConfig,
     private val context: CheckerContext
 ) : IrTreeSymbolsVisitor() {
-    private val contextUpdaters: MutableList<ContextUpdater> = mutableListOf(ParentChainUpdater)
+    private val contextUpdaters: MutableSet<ContextUpdater> = mutableSetOf(ParentChainUpdater)
     private val elementCheckers: MutableList<IrElementChecker<*>> = mutableListOf(
         IrNoInlineUseSitesChecker, IrSetValueAssignabilityChecker,
         IrFunctionDispatchReceiverChecker, IrFunctionParametersChecker, IrConstructorReceiverChecker,
@@ -107,11 +107,9 @@ private class IrFileValidator(
 
     init {
         if (config.checkValueScopes) {
-            contextUpdaters.add(ValueScopeUpdater)
             elementCheckers.add(IrValueAccessScopeChecker)
         }
         if (config.checkTypeParameterScopes) {
-            contextUpdaters.add(TypeParameterScopeUpdater)
             typeCheckers.add(IrTypeParameterScopeChecker)
         }
         if (config.checkAllKotlinFieldsArePrivate) {
@@ -141,6 +139,10 @@ private class IrFileValidator(
         }
         if (config.checkIrExpressionBodyInFunction) {
             elementCheckers.add(IrExpressionBodyInFunctionChecker)
+        }
+
+        for (checker in elementCheckers + symbolCheckers + typeCheckers) {
+            contextUpdaters += checker.requiredContextUpdaters
         }
     }
 
