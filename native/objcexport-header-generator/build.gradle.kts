@@ -23,7 +23,7 @@ dependencies {
         testImplementation(project(":kotlin-native:Interop:Indexer"))
         testImplementation(project(":native:kotlin-native-utils"))
         testImplementation(project(":kotlin-native:Interop:StubGenerator"))
-        testImplementation(projectTests(":native:native.tests"))
+        testImplementation(testFixtures(project(":native:native.tests")))
     }
 
     testApi(libs.junit.jupiter.api)
