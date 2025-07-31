@@ -4248,6 +4248,12 @@ internal val KT_DIAGNOSTIC_CONVERTER = KaDiagnosticConverterBuilder.buildConvert
             token,
         )
     }
+    add(FirErrors.VAR_PROPERTY_WITH_EXPLICIT_BACKING_FIELD) { firDiagnostic ->
+        VarPropertyWithExplicitBackingFieldImpl(
+            firDiagnostic as KtPsiDiagnostic,
+            token,
+        )
+    }
     add(FirErrors.INCONSISTENT_BACKING_FIELD_TYPE) { firDiagnostic ->
         InconsistentBackingFieldTypeImpl(
             firDiagnostic as KtPsiDiagnostic,
