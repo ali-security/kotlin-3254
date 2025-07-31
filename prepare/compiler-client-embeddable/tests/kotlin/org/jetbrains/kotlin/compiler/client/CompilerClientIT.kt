@@ -16,6 +16,7 @@
 
 package org.jetbrains.kotlin.compiler.client
 
+import org.jetbrains.kotlin.cli.common.isWindows
 import org.jetbrains.kotlin.cli.common.messages.MessageCollectorImpl
 import org.jetbrains.kotlin.daemon.client.DaemonReportMessage
 import org.jetbrains.kotlin.daemon.client.DaemonReportingTargets
@@ -76,11 +77,28 @@ class CompilerClientIT {
 
     @Test
     fun testSimpleScript() {
-        val (out, code) = runCompiler(
-                "-cp", compilationClasspath.joinToString(File.pathSeparator) { it.canonicalPath },
-                "-Xuse-fir-lt=false", "-Xallow-any-scripts-in-source-roots",
-                File("testData/scripts/simpleHelloWorld.kts").canonicalPath)
-        assertEquals(0, code, "compilation failed:\n" + out + "\n")
+        val args = mutableListOf<String>()
+
+        if (isWindows) {
+            // On Windows, use a classpath file to avoid command line length limitations
+            val classpathFile = File(workingDir.root, "classpath.txt")
+            classpathFile.writeText(compilationClasspath.joinToString(File.pathSeparator) { it.canonicalPath })
+            args.add("-cp")
+            args.add("@${classpathFile.canonicalPath}")
+        } else {
+            args.add("-cp")
+            args.add(compilationClasspath.joinToString(File.pathSeparator) { it.canonicalPath })
+        }
+
+        args.addAll(listOf(
+                "-Xuse-fir-lt=false",
+                "-Xallow-any-scripts-in-source-roots",
+                File("testData/scripts/simpleHelloWorld.kts").canonicalPath
+            )
+        )
+
+        val (out, code) = runCompiler(*args.toTypedArray())
+        assertEquals(0, code, "compilation failed:\n$out\n")
     }
 
     private fun runCompiler(vararg args: String): Pair<String, Int> {
