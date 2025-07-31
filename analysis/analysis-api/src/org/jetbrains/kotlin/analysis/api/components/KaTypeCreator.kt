@@ -57,9 +57,8 @@ public interface KaTypeCreator : KaSessionComponent {
     public fun buildArrayType(elementType: KaType, init: KaArrayTypeBuilder.() -> Unit = {}): KaType
 
     /**
-     * Builds an array type that would be used by the compiler
-     * to represent values of [vararg](https://kotlinlang.org/docs/functions.html#variable-number-of-arguments-varargs)
-     * function parameter from the given [elementType].
+     * Builds the underlying array type of [vararg](https://kotlinlang.org/docs/functions.html#variable-number-of-arguments-varargs)
+     * function parameter with the given [elementType].
      */
     @KaExperimentalApi
     public fun buildVarargArrayType(elementType: KaType): KaType
@@ -148,7 +147,7 @@ public interface KaTypeParameterTypeBuilder : KaTypeBuilder {
 @SubclassOptInRequired(KaImplementationDetail::class)
 public interface KaArrayTypeBuilder : KaTypeBuilder {
     /**
-     * Whether the type is marked as nullable, i.e., the type is represented as `T?`.
+     * Whether the resulting array type is marked as nullable, i.e., the type is represented as `T?`.
      *
      * Default value: `false`.
      *
@@ -167,6 +166,9 @@ public interface KaArrayTypeBuilder : KaTypeBuilder {
     /**
      * Whether the builder should try to construct [primitive arrays](https://kotlinlang.org/docs/arrays.html#primitive-type-arrays)
      * (e.g. `IntArray`) for primitive types (e.g. `Int`).
+     *
+     * Note that nullable primitive types (e.g. `Int?`) are not considered primitive, as they are represented as objects.
+     * Thus, for these types, the builder will always produce boxed arrays (e.g. `Array<Int?>`).
      *
      * Default value: `true`.
      */
@@ -189,6 +191,26 @@ public fun buildClassType(classId: ClassId, init: KaClassTypeBuilder.() -> Unit 
 context(context: KaTypeCreator)
 public fun buildClassType(symbol: KaClassLikeSymbol, init: KaClassTypeBuilder.() -> Unit = {}): KaType {
     return with(context) { buildClassType(symbol, init) }
+}
+
+/**
+ * @see KaTypeCreator.buildArrayType
+ */
+@KaExperimentalApi
+@KaContextParameterApi
+context(context: KaTypeCreator)
+public fun buildArrayType(elementType: KaType, init: KaArrayTypeBuilder.() -> Unit = {}): KaType {
+    return with(context) { buildArrayType(elementType, init) }
+}
+
+/**
+ * @see KaTypeCreator.buildVarargArrayType
+ */
+@KaExperimentalApi
+@KaContextParameterApi
+context(context: KaTypeCreator)
+public fun buildVarargArrayType(elementType: KaType): KaType {
+    return with(context) { buildVarargArrayType(elementType) }
 }
 
 /**
