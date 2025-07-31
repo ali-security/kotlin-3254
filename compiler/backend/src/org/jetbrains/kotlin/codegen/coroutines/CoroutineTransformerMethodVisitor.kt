@@ -662,6 +662,8 @@ class CoroutineTransformerMethodVisitor(
      * When a variable becomes dead, we have to clean it up - spilling null into continuation.
      */
     private fun spillVariables(suspensionPoints: List<SuspensionPoint>, methodNode: MethodNode): List<List<SpilledVariableAndField>> {
+        if (suspensionPoints.isEmpty()) return emptyList()
+
         val frames: Array<out Frame<BasicValue>?> = performSpilledVariableFieldTypesAnalysis(methodNode, containingClassInternalName)
         val afterResumeFrames = performUninitializedAfterResumeVariablesAnalysis(suspensionPoints, methodNode, containingClassInternalName)
 
