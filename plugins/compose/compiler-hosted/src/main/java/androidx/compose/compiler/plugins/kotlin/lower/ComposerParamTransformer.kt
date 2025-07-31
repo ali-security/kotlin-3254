@@ -496,11 +496,15 @@ class ComposerParamTransformer(
                         endOffset,
                         this,
                         ctor,
-                        typeArgumentsCount = 0,
+                        typeArgumentsCount = classSymbol.owner.typeParameters.size,
                         constructorTypeArgumentsCount = 0,
                         origin = null
                     ).also {
                         it.arguments[0] = defaultUnderlyingTypeValue
+                        for (i in 0 until classSymbol.owner.typeParameters.size) {
+                            val typeParameter = classSymbol.owner.typeParameters[i]
+                            it.typeArguments[i] = IrSimpleTypeImpl(typeParameter.symbol, false, emptyList(), emptyList())
+                        }
                     }
                 }
             }
