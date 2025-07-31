@@ -416,7 +416,7 @@ class FirMemberDeserializer(private val c: FirDeserializationContext) {
                 isConst = Flags.IS_CONST.get(flags)
                 isLateInit = Flags.IS_LATEINIT.get(flags)
                 isExternal = Flags.IS_EXTERNAL_PROPERTY.get(flags)
-                hasMustUseReturnValue = Flags.HAS_MUST_USE_RETURN_VALUE_PROPERTY.get(flags)
+                returnValueStatus = ProtoEnumFlags.returnValueStatus(Flags.RETURN_VALUE_STATUS_PROPERTY.get(flags))
             }
 
             resolvePhase = FirResolvePhase.ANALYZED_DEPENDENCIES
@@ -645,7 +645,7 @@ class FirMemberDeserializer(private val c: FirDeserializationContext) {
                 isExternal = Flags.IS_EXTERNAL_FUNCTION.get(flags)
                 isSuspend = Flags.IS_SUSPEND.get(flags)
                 hasStableParameterNames = !Flags.IS_FUNCTION_WITH_NON_STABLE_PARAMETER_NAMES.get(flags)
-                hasMustUseReturnValue = Flags.HAS_MUST_USE_RETURN_VALUE_FUNCTION.get(flags)
+                returnValueStatus = ProtoEnumFlags.returnValueStatus(Flags.RETURN_VALUE_STATUS_FUNCTION.get(flags))
             }
             this.symbol = symbol
             dispatchReceiverType = c.dispatchReceiver
@@ -734,7 +734,7 @@ class FirMemberDeserializer(private val c: FirDeserializationContext) {
                 isActual = false
                 isOverride = false
                 this.isInner = isInner
-                hasMustUseReturnValue = Flags.HAS_MUST_USE_RETURN_VALUE_CTOR.get(flags)
+                returnValueStatus = ProtoEnumFlags.returnValueStatus(Flags.RETURN_VALUE_STATUS_CTOR.get(flags))
             }
             this.symbol = symbol
             dispatchReceiverType =

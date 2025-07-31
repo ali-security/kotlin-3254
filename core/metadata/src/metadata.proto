@@ -500,6 +500,23 @@ enum MemberKind {
   SYNTHESIZED = 3;
 }
 
+enum ReturnValueStatus {
+   UNSPECIFIED = 0;
+  /*
+      Since flags are ordered from least significant to most significant bits,
+      1 represents "MustUse (lowest bit in pair) + unspecified(highest bit)" state
+      that came from when we did not have 'specified' flag in design.
+      We can use it to read 2.3.x stdlib bootstrap binaries.
+      Can be deleted after re-bootstrapping,
+      but this is an invalid state from semantic standpoint anyway.
+      (Unless we will want to use 1 as a special state for some future design extensions).
+      Should not be used anywhere except ProtoEnumFlags/FirMetadataDeserializer.
+   */
+   OLD_MUST_USE = 1;
+   EXPLICITLY_IGNORABLE = 2;
+   MUST_USE = 3;
+}
+
 message VersionRequirement {
   enum Level {
     WARNING = 0;

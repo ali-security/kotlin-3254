@@ -16,6 +16,7 @@ import org.jetbrains.kotlin.fir.declarations.FirDeclarationStatus
 import org.jetbrains.kotlin.fir.declarations.impl.FirDeclarationStatusImpl.Modifier.*
 import org.jetbrains.kotlin.fir.visitors.FirTransformer
 import org.jetbrains.kotlin.fir.visitors.FirVisitor
+import org.jetbrains.kotlin.resolve.ReturnValueStatus
 
 open class FirDeclarationStatusImpl(
     override val visibility: Visibility,
@@ -157,10 +158,23 @@ open class FirDeclarationStatusImpl(
             this[HAS_STABLE_PARAMETER_NAMES] = value
         }
 
-    override var hasMustUseReturnValue: Boolean
-        get() = this[HAS_MUST_USE_RETURN_VALUE]
+    override var returnValueStatus: ReturnValueStatus
+        get() = ReturnValueStatus.fromBitFlags(this[HAS_MUST_USE_RETURN_VALUE], this[HAS_IGNORABLE_RETURN_VALUE])
         set(value) {
-            this[HAS_MUST_USE_RETURN_VALUE] = value
+            when (value) {
+                ReturnValueStatus.Unspecified -> {
+                    this[HAS_MUST_USE_RETURN_VALUE] = false
+                    this[HAS_IGNORABLE_RETURN_VALUE] = false
+                }
+                ReturnValueStatus.MustUse -> {
+                    this[HAS_MUST_USE_RETURN_VALUE] = true
+                    this[HAS_IGNORABLE_RETURN_VALUE] = false
+                }
+                ReturnValueStatus.ExplicitlyIgnorable -> {
+                    this[HAS_MUST_USE_RETURN_VALUE] = false
+                    this[HAS_IGNORABLE_RETURN_VALUE] = true
+                }
+            }
         }
 
     enum class Modifier(val mask: Int) {
@@ -184,7 +198,9 @@ open class FirDeclarationStatusImpl(
         FUN(0x20000),
         HAS_STABLE_PARAMETER_NAMES(0x40000),
         VALUE(0x80000),
-        HAS_MUST_USE_RETURN_VALUE(0x100000)
+        HAS_MUST_USE_RETURN_VALUE(0x100000),
+        HAS_IGNORABLE_RETURN_VALUE(0x200000),
+        ;
     }
 
     override fun <R, D> acceptChildren(visitor: FirVisitor<R, D>, data: D) {}

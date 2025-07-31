@@ -272,6 +272,102 @@ public final class ProtoBuf {
     // @@protoc_insertion_point(enum_scope:org.jetbrains.kotlin.metadata.MemberKind)
   }
 
+  /**
+   * Protobuf enum {@code org.jetbrains.kotlin.metadata.ReturnValueStatus}
+   */
+  public enum ReturnValueStatus
+      implements org.jetbrains.kotlin.protobuf.Internal.EnumLite {
+    /**
+     * <code>UNSPECIFIED = 0;</code>
+     */
+    UNSPECIFIED(0, 0),
+    /**
+     * <code>OLD_MUST_USE = 1;</code>
+     *
+     * <pre>
+     *Since flags are ordered from least significant to most significant bits,
+     *1 represents "MustUse (lowest bit in pair) + unspecified(highest bit)" state
+     *that came from when we did not have 'specified' flag in design.
+     *We can use it to read 2.3.x stdlib bootstrap binaries.
+     *Can be deleted after re-bootstrapping,
+     *but this is an invalid state from semantic standpoint anyway.
+     *(Unless we will want to use 1 as a special state for some future design extensions).
+     *Should not be used anywhere except ProtoEnumFlags/FirMetadataDeserializer.
+     * </pre>
+     */
+    OLD_MUST_USE(1, 1),
+    /**
+     * <code>EXPLICITLY_IGNORABLE = 2;</code>
+     */
+    EXPLICITLY_IGNORABLE(2, 2),
+    /**
+     * <code>MUST_USE = 3;</code>
+     */
+    MUST_USE(3, 3),
+    ;
+
+    /**
+     * <code>UNSPECIFIED = 0;</code>
+     */
+    public static final int UNSPECIFIED_VALUE = 0;
+    /**
+     * <code>OLD_MUST_USE = 1;</code>
+     *
+     * <pre>
+     *Since flags are ordered from least significant to most significant bits,
+     *1 represents "MustUse (lowest bit in pair) + unspecified(highest bit)" state
+     *that came from when we did not have 'specified' flag in design.
+     *We can use it to read 2.3.x stdlib bootstrap binaries.
+     *Can be deleted after re-bootstrapping,
+     *but this is an invalid state from semantic standpoint anyway.
+     *(Unless we will want to use 1 as a special state for some future design extensions).
+     *Should not be used anywhere except ProtoEnumFlags/FirMetadataDeserializer.
+     * </pre>
+     */
+    public static final int OLD_MUST_USE_VALUE = 1;
+    /**
+     * <code>EXPLICITLY_IGNORABLE = 2;</code>
+     */
+    public static final int EXPLICITLY_IGNORABLE_VALUE = 2;
+    /**
+     * <code>MUST_USE = 3;</code>
+     */
+    public static final int MUST_USE_VALUE = 3;
+
+
+    public final int getNumber() { return value; }
+
+    public static ReturnValueStatus valueOf(int value) {
+      switch (value) {
+        case 0: return UNSPECIFIED;
+        case 1: return OLD_MUST_USE;
+        case 2: return EXPLICITLY_IGNORABLE;
+        case 3: return MUST_USE;
+        default: return null;
+      }
+    }
+
+    public static org.jetbrains.kotlin.protobuf.Internal.EnumLiteMap<ReturnValueStatus>
+        internalGetValueMap() {
+      return internalValueMap;
+    }
+    private static org.jetbrains.kotlin.protobuf.Internal.EnumLiteMap<ReturnValueStatus>
+        internalValueMap =
+          new org.jetbrains.kotlin.protobuf.Internal.EnumLiteMap<ReturnValueStatus>() {
+            public ReturnValueStatus findValueByNumber(int number) {
+              return ReturnValueStatus.valueOf(number);
+            }
+          };
+
+    private final int value;
+
+    private ReturnValueStatus(int index, int value) {
+      this.value = value;
+    }
+
+    // @@protoc_insertion_point(enum_scope:org.jetbrains.kotlin.metadata.ReturnValueStatus)
+  }
+
   public interface StringTableOrBuilder extends
       // @@protoc_insertion_point(interface_extends:org.jetbrains.kotlin.metadata.StringTable)
       org.jetbrains.kotlin.protobuf.MessageLiteOrBuilder {

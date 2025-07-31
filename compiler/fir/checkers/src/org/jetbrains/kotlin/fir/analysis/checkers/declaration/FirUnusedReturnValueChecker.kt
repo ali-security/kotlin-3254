@@ -32,6 +32,7 @@ import org.jetbrains.kotlin.name.CallableId
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.StandardClassIds
+import org.jetbrains.kotlin.resolve.ReturnValueStatus
 
 object FirReturnValueOverrideChecker : FirCallableDeclarationChecker(MppCheckerKind.Common) {
     context(context: CheckerContext, reporter: DiagnosticReporter)
@@ -40,7 +41,7 @@ object FirReturnValueOverrideChecker : FirCallableDeclarationChecker(MppCheckerK
 
         // Only check mustUse overrides:
         if (!declaration.isOverride) return
-        if (!declaration.status.hasMustUseReturnValue) return
+        if (declaration.status.returnValueStatus != ReturnValueStatus.MustUse) return
         val symbol = declaration.symbol
 
         // Check if any of the overridden symbols have @IgnorableReturnValue
@@ -174,7 +175,7 @@ private fun FirCallableSymbol<*>.isSubjectToCheck(): Boolean {
     // If latter, metadata flag should be added for them too.
     if (this is FirEnumEntrySymbol) return true
 
-    return resolvedStatus.hasMustUseReturnValue
+    return resolvedStatus.returnValueStatus == ReturnValueStatus.MustUse
 }
 
 private inline fun CallableId.ifTypealiasedJvmCollection(nonIgnorableCollectionMethod: (Boolean) -> Unit) {
