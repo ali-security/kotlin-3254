@@ -43832,6 +43832,12 @@ public class FirNativeCodegenBoxTestNoPLGenerated extends AbstractNativeCodegenB
             public void testEqualsOnFunctionParameters() {
               runTest("compiler/testData/codegen/box/reflection/typeOf/noReflect/nonReifiedTypeParameters/equalsOnFunctionParameters.kt");
             }
+
+            @Test
+            @TestMetadata("typeParameterFlags.kt")
+            public void testTypeParameterFlags() {
+              runTest("compiler/testData/codegen/box/reflection/typeOf/noReflect/nonReifiedTypeParameters/typeParameterFlags.kt");
+            }
           }
         }
 
