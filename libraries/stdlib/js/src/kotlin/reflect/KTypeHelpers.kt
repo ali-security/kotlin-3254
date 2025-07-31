@@ -15,8 +15,6 @@ internal fun createKType(
 
 internal fun createDynamicKType(): KType = DynamicKType
 
-internal fun markKTypeNullable(kType: KType) = KTypeImpl(kType.classifier!!, kType.arguments, true)
-
 internal fun createKTypeParameter(
     name: String,
     upperBounds: Array<KType>,
