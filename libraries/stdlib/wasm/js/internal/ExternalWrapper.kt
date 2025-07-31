@@ -13,6 +13,9 @@ import kotlin.wasm.JsBuiltin
 import kotlin.wasm.WasmExport
 import kotlin.wasm.WasmImport
 import kotlin.wasm.internal.WasmCharArray
+// TODO: remove after bootstrap
+import kotlin.wasm.unsafe.withScopedMemoryAllocator
+import kotlin.wasm.unsafe.UnsafeWasmMemoryApi
 
 internal typealias ExternalInterfaceType = JsAny
 
@@ -183,39 +186,48 @@ internal fun anyToExternRef(x: Any): ExternalInterfaceType {
 internal fun stringLength(x: ExternalInterfaceType): Int =
     js("x.length")
 
-// TODO: remove @WasmImport and "WASM_IMPORT_EXPORT_UNSUPPORTED_RETURN_TYPE", "WASM_IMPORT_EXPORT_UNSUPPORTED_PARAMETER_TYPE" suppresses after bootstrap
-@Suppress(
-    "WRONG_JS_INTEROP_TYPE",
-    "WASM_IMPORT_EXPORT_UNSUPPORTED_RETURN_TYPE",
-    "WASM_IMPORT_EXPORT_UNSUPPORTED_PARAMETER_TYPE",
-    "OPT_IN_USAGE"
-)
-@WasmImport("wasm:js-string", "fromCharCodeArray")
-@JsBuiltin(
-    "js-string",
-    "fromCharCodeArray",
-    """const moduleFromCharCode = new WebAssembly.Module(new Uint8Array([
-  0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00, 0x01, 0x0b, 0x02, 0x5e,
-  0x77, 0x01, 0x60, 0x02, 0x64, 0x00, 0x7f, 0x01, 0x7f, 0x03, 0x02, 0x01,
-  0x01, 0x07, 0x0b, 0x01, 0x07, 0x61, 0x31, 0x36, 0x5f, 0x67, 0x65, 0x74,
-  0x00, 0x00, 0x0a, 0x0b, 0x01, 0x09, 0x00, 0x20, 0x00, 0x20, 0x01, 0xfb,
-  0x0d, 0x00, 0x0b, 0x00, 0x13, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x04, 0x0c,
-  0x01, 0x00, 0x09, 0x61, 0x72, 0x72, 0x61, 0x79, 0x5f, 0x69, 0x31, 0x36
-]));
-const helpersFromCharCode = new WebAssembly.Instance(moduleFromCharCode).exports;
-
-export function fromCharCodeArray(array, start, end) {
-    start >>>= 0;
-    end >>>= 0;
-    let result = [];
-    for (let i = start; i < end; i++) {
-        result.push(String.fromCharCode(helpersFromCharCode.a16_get(array, i)));
-    }
-    return result.join("");
+// TODO: remove after bootstrap
+// kotlin string to js string export
+// TODO Uint16Array may work with byte endian different with Wasm (i.e. little endian)
+internal fun importStringFromWasm(address: Int, length: Int, prefix: ExternalInterfaceType?): JsString {
+    js(
+        """
+    const mem16 = new Uint16Array(wasmExports.memory.buffer, address, length);
+    const str = String.fromCharCode.apply(null, mem16);
+    return (prefix == null) ? str : prefix + str;
+    """
+    )
 }
-"""
-)
-internal external fun fromCharCodeArray(array: WasmCharArray, start: Int, end: Int): JsStringRef
+
+// TODO: uncomment after bootstrap
+//@Suppress(
+//    "WRONG_JS_INTEROP_TYPE"
+//)
+//@JsBuiltin(
+//    "js-string",
+//    "fromCharCodeArray",
+//    """const moduleFromCharCode = new WebAssembly.Module(new Uint8Array([
+//  0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00, 0x01, 0x0b, 0x02, 0x5e,
+//  0x77, 0x01, 0x60, 0x02, 0x64, 0x00, 0x7f, 0x01, 0x7f, 0x03, 0x02, 0x01,
+//  0x01, 0x07, 0x0b, 0x01, 0x07, 0x61, 0x31, 0x36, 0x5f, 0x67, 0x65, 0x74,
+//  0x00, 0x00, 0x0a, 0x0b, 0x01, 0x09, 0x00, 0x20, 0x00, 0x20, 0x01, 0xfb,
+//  0x0d, 0x00, 0x0b, 0x00, 0x13, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x04, 0x0c,
+//  0x01, 0x00, 0x09, 0x61, 0x72, 0x72, 0x61, 0x79, 0x5f, 0x69, 0x31, 0x36
+//]));
+//const helpersFromCharCode = new WebAssembly.Instance(moduleFromCharCode).exports;
+//
+//export function fromCharCodeArray(array, start, end) {
+//    start >>>= 0;
+//    end >>>= 0;
+//    let result = [];
+//    for (let i = start; i < end; i++) {
+//        result.push(String.fromCharCode(helpersFromCharCode.a16_get(array, i)));
+//    }
+//    return result.join("");
+//}
+//"""
+//)
+//internal external fun fromCharCodeArray(array: WasmCharArray, start: Int, end: Int): JsStringRef
 
 internal fun kotlinToJsStringAdapter(x: String?): JsString? {
     // Using nullable String to represent default value
@@ -225,49 +237,104 @@ internal fun kotlinToJsStringAdapter(x: String?): JsString? {
 
     val srcArray = x.chars
     val stringLength = srcArray.len()
-    return fromCharCodeArray(srcArray, 0, stringLength)
+    // TODO: replace after bootstrap
+    val maxStringLength = STRING_INTEROP_MEM_BUFFER_SIZE / CHAR_SIZE_BYTES
+
+    @OptIn(UnsafeWasmMemoryApi::class)
+    withScopedMemoryAllocator { allocator ->
+        val memBuffer = allocator.allocate(stringLength.coerceAtMost(maxStringLength) * CHAR_SIZE_BYTES).address.toInt()
+
+        var result: ExternalInterfaceType? = null
+        var srcStartIndex = 0
+        while (srcStartIndex < stringLength - maxStringLength) {
+            unsafeWasmCharArrayToRawMemory(srcArray, srcStartIndex, maxStringLength, memBuffer)
+            result = importStringFromWasm(memBuffer, maxStringLength, result)
+            srcStartIndex += maxStringLength
+        }
+
+        unsafeWasmCharArrayToRawMemory(srcArray, srcStartIndex, stringLength - srcStartIndex, memBuffer)
+        return importStringFromWasm(memBuffer, stringLength - srcStartIndex, result)
+    }
+//    return fromCharCodeArray(srcArray, 0, stringLength)
 }
 
 internal fun jsCheckIsNullOrUndefinedAdapter(x: ExternalInterfaceType?): ExternalInterfaceType? =
     // We deliberately avoid usage of `takeIf` here as type erase on the inlining stage leads to infinite recursion
     if (isNullish(x)) null else x
 
-// TODO: remove @WasmImport and "WASM_IMPORT_EXPORT_UNSUPPORTED_RETURN_TYPE", "WASM_IMPORT_EXPORT_UNSUPPORTED_PARAMETER_TYPE" suppresses after bootstrap
-@Suppress(
-    "WRONG_JS_INTEROP_TYPE",
-    "WASM_IMPORT_EXPORT_UNSUPPORTED_PARAMETER_TYPE",
-    "OPT_IN_USAGE"
-)
-@WasmImport("wasm:js-string", "intoCharCodeArray")
-@JsBuiltin(
-    "js-string",
-    "intoCharCodeArray",
-    """const moduleIntoCharCode = new WebAssembly.Module(new Uint8Array([
-  0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00, 0x01, 0x0b, 0x02, 0x5e,
-  0x77, 0x01, 0x60, 0x03, 0x64, 0x00, 0x7f, 0x7f, 0x00, 0x03, 0x02, 0x01,
-  0x01, 0x07, 0x0b, 0x01, 0x07, 0x61, 0x31, 0x36, 0x5f, 0x73, 0x65, 0x74,
-  0x00, 0x00, 0x0a, 0x0d, 0x01, 0x0b, 0x00, 0x20, 0x00, 0x20, 0x01, 0x20,
-  0x02, 0xfb, 0x0e, 0x00, 0x0b, 0x00, 0x13, 0x04, 0x6e, 0x61, 0x6d, 0x65,
-  0x04, 0x0c, 0x01, 0x00, 0x09, 0x61, 0x72, 0x72, 0x61, 0x79, 0x5f, 0x69,
-  0x31, 0x36
-]));
-const helpersIntoCharCode = new WebAssembly.Instance(moduleIntoCharCode).exports;
+// TODO: uncomment after bootstrap
+//@Suppress("WRONG_JS_INTEROP_TYPE")
+//@JsBuiltin(
+//    "js-string",
+//    "intoCharCodeArray",
+//    """const moduleIntoCharCode = new WebAssembly.Module(new Uint8Array([
+//  0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00, 0x01, 0x0b, 0x02, 0x5e,
+//  0x77, 0x01, 0x60, 0x03, 0x64, 0x00, 0x7f, 0x7f, 0x00, 0x03, 0x02, 0x01,
+//  0x01, 0x07, 0x0b, 0x01, 0x07, 0x61, 0x31, 0x36, 0x5f, 0x73, 0x65, 0x74,
+//  0x00, 0x00, 0x0a, 0x0d, 0x01, 0x0b, 0x00, 0x20, 0x00, 0x20, 0x01, 0x20,
+//  0x02, 0xfb, 0x0e, 0x00, 0x0b, 0x00, 0x13, 0x04, 0x6e, 0x61, 0x6d, 0x65,
+//  0x04, 0x0c, 0x01, 0x00, 0x09, 0x61, 0x72, 0x72, 0x61, 0x79, 0x5f, 0x69,
+//  0x31, 0x36
+//]));
+//const helpersIntoCharCode = new WebAssembly.Instance(moduleIntoCharCode).exports;
+//
+//export function intoCharCodeArray(s, array, start) {
+//    start >>>= 0;
+//    for (let i = 0; i < s.length; i++) {
+//      helpersIntoCharCode.a16_set(array, start + i, s.charCodeAt(i));
+//    }
+//    return s.length;
+//}
+//"""
+//)
+//internal external fun intoCharCodeArray(string: ExternalInterfaceType, array: WasmCharArray, start: Int): Int
 
-export function intoCharCodeArray(s, array, start) {
-    start >>>= 0;
-    for (let i = 0; i < s.length; i++) {
-      helpersIntoCharCode.a16_set(array, start + i, s.charCodeAt(i));
-    }
-    return s.length;
+// TODO: remove after bootstrap
+// js string to kotlin string import
+// TODO Uint16Array may work with byte endian different with Wasm (i.e. little endian)
+internal fun jsExportStringToWasm(src: ExternalInterfaceType, srcOffset: Int, srcLength: Int, dstAddr: Int) {
+    js(
+        """
+    const mem16 = new Uint16Array(wasmExports.memory.buffer, dstAddr, srcLength);
+    let arrayIndex = 0;
+    let srcIndex = srcOffset;
+    while (arrayIndex < srcLength) {
+        mem16.set([src.charCodeAt(srcIndex)], arrayIndex);
+        srcIndex++;
+        arrayIndex++;
+    }     
+    """
+    )
 }
-"""
-)
-internal external fun intoCharCodeArray(string: ExternalInterfaceType, array: WasmCharArray, start: Int): Int
+
+// TODO: remove after bootstrap
+private const val STRING_INTEROP_MEM_BUFFER_SIZE = 65_536 // 1 page 4KiB
 
 internal fun jsToKotlinStringAdapter(x: ExternalInterfaceType): String {
     val stringLength = stringLength(x)
     val dstArray = WasmCharArray(stringLength)
-    intoCharCodeArray(x, dstArray, 0)
+    // TODO: replace after bootstrap
+    if (stringLength == 0) {
+        return dstArray.createString()
+    }
+
+    @OptIn(UnsafeWasmMemoryApi::class)
+    withScopedMemoryAllocator { allocator ->
+        val maxStringLength = STRING_INTEROP_MEM_BUFFER_SIZE / CHAR_SIZE_BYTES
+        val memBuffer = allocator.allocate(stringLength.coerceAtMost(maxStringLength) * CHAR_SIZE_BYTES).address.toInt()
+
+        var srcStartIndex = 0
+        while (srcStartIndex < stringLength - maxStringLength) {
+            jsExportStringToWasm(x, srcStartIndex, maxStringLength, memBuffer)
+            unsafeRawMemoryToWasmCharArray(memBuffer, srcStartIndex, maxStringLength, dstArray)
+            srcStartIndex += maxStringLength
+        }
+
+        jsExportStringToWasm(x, srcStartIndex, stringLength - srcStartIndex, memBuffer)
+        unsafeRawMemoryToWasmCharArray(memBuffer, srcStartIndex, stringLength - srcStartIndex, dstArray)
+    }
+
+//    intoCharCodeArray(x, dstArray, 0)
     return dstArray.createString()
 }
 

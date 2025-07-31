@@ -150,15 +150,6 @@ export function fromCharCodeArray(array, start, end) {
             wasmImportModule != null -> {
                 check(declaration.isExternal) { "Non-external fun with @WasmImport ${declaration.fqNameWhenAvailable}"}
                 wasmFileCodegenContext.addJsModuleImport(declaration.symbol, wasmImportModule.moduleName)
-                // TODO: remove after bootstrap
-                if (wasmImportModule.moduleName == "wasm:js-string") {
-                    wasmFileCodegenContext.addJsBuiltin(
-                        wasmImportModule.declarationName.owner,
-                        jsStringImpls[wasmImportModule.declarationName.owner]
-                            ?: error("No polyfill for ${wasmImportModule.declarationName.owner}")
-                    )
-                    WasmImportDescriptor(wasmImportModule.moduleName, wasmImportModule.declarationName)
-                }
                 wasmImportModule
             }
             jsBuiltin != null -> {
