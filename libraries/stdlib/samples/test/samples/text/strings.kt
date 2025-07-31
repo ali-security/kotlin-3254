@@ -839,10 +839,10 @@ class Strings {
         assertPrints(text.replaceRange(7..11, ""), "Hello, !")
 
         // Replacing at the end of the string: endIndex is exclusive
-        assertPrints(text.replaceRange(7, text.length, "everyone"), "Hello, everyone")
+        assertPrints(text.replaceRange(0, 5, "Hey"), "Hey, world!")
 
-        // But for the overload accepting the range, range's end is inclusive
-        assertPrints(text.replaceRange(7..<text.length, "everyone"), "Hello, everyone")
+        // But for the overload accepting the range, range's end is inclusive (this the comma is also replaced)
+        assertPrints(text.replaceRange(0..5, "Hey"), "Hey world!")
 
         // Throws if startIndex is greater than endIndex
         assertFails { text.replaceRange(startIndex = 7, endIndex = 4, replacement = "Kotlin") }
