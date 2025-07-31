@@ -266,7 +266,7 @@ class MppCrossCompilationPublicationIT : KGPBaseTest() {
                     ":compileKotlinLinuxX64",
                     ":compileKotlinMingwX64",
                     ":compileKotlinMacosArm64",
-                    "compileKotlinIosArm64"
+                    ":compileKotlinIosArm64"
                 ).count {
                     it.startsWith(eventPrefix)
                 }
@@ -278,7 +278,7 @@ class MppCrossCompilationPublicationIT : KGPBaseTest() {
                 )
             } else {
                 assertEquals(
-                    2,
+                    1,
                     notSupportedEventEvents
                 )
             }
