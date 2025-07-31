@@ -28,6 +28,7 @@ fun copyCommonCompilerArguments(from: CommonCompilerArguments, to: CommonCompile
     to.contextReceivers = from.contextReceivers
     to.contextSensitiveResolution = from.contextSensitiveResolution
     to.debugLevelCompilerChecks = from.debugLevelCompilerChecks
+    to.detailedPerf = from.detailedPerf
     to.directJavaActualization = from.directJavaActualization
     to.disableDefaultScriptingPlugin = from.disableDefaultScriptingPlugin
     to.disablePhases = from.disablePhases?.copyOf()

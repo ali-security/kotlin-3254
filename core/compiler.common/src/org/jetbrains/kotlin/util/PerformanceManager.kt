@@ -66,6 +66,8 @@ abstract class PerformanceManager(val targetPlatform: TargetPlatform, val presen
     val isPhaseMeasuring: Boolean
         get() = phaseStartTime != null
 
+    abstract val detailedPerf: Boolean
+
     fun getTargetInfo(): String =
         listOfNotNull(targetDescription, outputKind).joinToString("-") + " $files files ($lines lines)"
 
@@ -371,7 +373,7 @@ abstract class PerformanceManager(val targetPlatform: TargetPlatform, val presen
     fun createPerformanceReport(dumpFormat: DumpFormat): String = when (dumpFormat) {
         DumpFormat.PlainText -> buildString {
             append("$presentableName performance report\n")
-            unitStats.forEachStringMeasurement { appendLine(it) }
+            forEachStringMeasurement { appendLine(it) }
         }
         DumpFormat.Json -> UnitStatsJsonDumper.dump(unitStats)
         DumpFormat.Markdown -> MarkdownReportRenderer(StatsCalculator(SingleReportsData(unitStats))).render()
@@ -386,6 +388,15 @@ abstract class PerformanceManager(val targetPlatform: TargetPlatform, val presen
 }
 
 class PerformanceManagerImpl(targetPlatform: TargetPlatform, presentableName: String) : PerformanceManager(targetPlatform, presentableName) {
+    private var detailedPerfEnabled: Boolean = false
+
+    override val detailedPerf: Boolean
+        get() = detailedPerfEnabled
+
+    fun withDetailedPerf() {
+        detailedPerfEnabled = true
+    }
+
     companion object {
         /**
          * Useful for measuring time when a pipeline is split on multiple parallel steps (in multithread mode or not)

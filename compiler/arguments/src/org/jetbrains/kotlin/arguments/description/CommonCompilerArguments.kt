@@ -314,6 +314,16 @@ val actualCommonCompilerArguments by compilerArgumentsLevel(CompilerArgumentsLev
     }
 
     compilerArgument {
+        name = "Xdetailed-perf"
+        description = "Enable more detailed performance statistics.".asReleaseDependent()
+        valueType = BooleanType.defaultFalse
+
+        lifecycle(
+            introducedVersion = KotlinReleaseVersion.v2_3_0,
+        )
+    }
+
+    compilerArgument {
         name = "Xdump-perf"
         description =
             ("Dump detailed performance statistics to the specified file in plain text, JSON or markdown format (it's detected by the file's extension).\n" +

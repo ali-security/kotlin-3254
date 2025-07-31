@@ -15,7 +15,8 @@ import java.util.*
 class ProfilingCompilerPerformanceManager(
     profilerPath: String,
     val command: String,
-    val outputDir: File
+    val outputDir: File,
+    override var detailedPerf: Boolean
 ) : PerformanceManager(JvmPlatforms.defaultJvmPlatform, "Profiling") {
     private val profiler = AsyncProfilerHelper.getInstance(profilerPath)
 
@@ -60,9 +61,9 @@ class ProfilingCompilerPerformanceManager(
     }
 
     companion object {
-        fun create(profileCompilerArgument: String): ProfilingCompilerPerformanceManager {
+        fun create(profileCompilerArgument: String, detailedPerf: Boolean): ProfilingCompilerPerformanceManager {
             val (path, command, outputDir) = profileCompilerArgument.split(":", limit = 3)
-            return ProfilingCompilerPerformanceManager(path, command, File(outputDir))
+            return ProfilingCompilerPerformanceManager(path, command, File(outputDir), detailedPerf)
         }
     }
 }

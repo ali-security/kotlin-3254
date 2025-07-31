@@ -69,7 +69,7 @@ abstract class AbstractCliPipeline<A : CommonCompilerArguments> {
             performanceManager.notifyCompilationFinished()
             if (arguments.reportPerf) {
                 messageCollector.report(CompilerMessageSeverity.LOGGING, "PERF: " + performanceManager.getTargetInfo())
-                performanceManager.unitStats.forEachStringMeasurement {
+                performanceManager.forEachStringMeasurement {
                     messageCollector.report(CompilerMessageSeverity.LOGGING, "PERF: $it", null)
                 }
             }

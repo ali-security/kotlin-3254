@@ -66,7 +66,10 @@ abstract class CLICompiler<A : CommonCompilerArguments> {
         this::class.java.classLoader.getResource(LanguageVersionSettings.RESOURCE_NAME_TO_ALLOW_READING_FROM_ENVIRONMENT) != null
 
     protected open fun createPerformanceManager(arguments: A, services: Services): PerformanceManager =
-        defaultPerformanceManager
+        defaultPerformanceManager.apply {
+            // TODO: find  better way to do this
+            if (this is PerformanceManagerImpl && arguments.detailedPerf) withDetailedPerf()
+        }
 
     // Used in CompilerRunnerUtil#invokeExecMethod, in Eclipse plugin (KotlinCLICompiler) and in kotlin-gradle-plugin (GradleCompilerRunner)
     fun execAndOutputXml(errStream: PrintStream, services: Services, vararg args: String): ExitCode {
@@ -125,7 +128,7 @@ abstract class CLICompiler<A : CommonCompilerArguments> {
                 performanceManager.notifyCompilationFinished()
                 if (arguments.reportPerf) {
                     collector.report(LOGGING, "PERF: " + performanceManager.getTargetInfo())
-                    performanceManager.unitStats.forEachStringMeasurement {
+                    performanceManager.forEachStringMeasurement {
                         collector.report(LOGGING, "PERF: $it", null)
                     }
                 }

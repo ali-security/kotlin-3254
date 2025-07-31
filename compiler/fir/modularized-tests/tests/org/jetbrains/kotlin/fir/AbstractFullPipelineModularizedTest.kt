@@ -290,7 +290,7 @@ abstract class AbstractFullPipelineModularizedTest : AbstractModularizedTest() {
         configureBaseArguments(args, moduleData, tmp)
         configureArguments(args, moduleData)
 
-        val manager = CompilerPerformanceManager()
+        val manager = CompilerPerformanceManager(args.detailedPerf)
         val services = Services.Builder().register(PerformanceManager::class.java, manager).build()
         val collector = TestMessageCollector()
         val result = try {
@@ -327,7 +327,7 @@ abstract class AbstractFullPipelineModularizedTest : AbstractModularizedTest() {
     }
 
 
-    private inner class CompilerPerformanceManager : PerformanceManager(JvmPlatforms.defaultJvmPlatform, "Modularized test performance manager") {
+    private inner class CompilerPerformanceManager(override var detailedPerf: Boolean) : PerformanceManager(JvmPlatforms.defaultJvmPlatform, "Modularized test performance manager") {
 
         fun reportCumulativeTime(): CumulativeTime {
             val gcInfo = unitStats.gcStats.associate { it.kind to GCInfo(it.kind, it.millis, it.count) }

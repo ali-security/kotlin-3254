@@ -268,6 +268,16 @@ progressive mode enabled may cause compilation errors in progressive mode.""",
         }
 
     @Argument(
+        value = "-Xdetailed-perf",
+        description = "Enable more detailed performance statistics.",
+    )
+    var detailedPerf: Boolean = false
+        set(value) {
+            checkFrozen()
+            field = value
+        }
+
+    @Argument(
         value = "-Xdump-perf",
         valueDescription = "<path>",
         description = """Dump detailed performance statistics to the specified file in plain text, JSON or markdown format (it's detected by the file's extension).
