@@ -815,10 +815,10 @@ private object UuidV7Generator {
             } else { // clocks are not ticking :(
                 // increment the counter
                 newTimeStampAndCounter = previousTimeStampAndCounter + 1
-                // in case of overflow, retry everything again in hope for a new millisecond to come
+                // check for the overflow
                 if (newTimeStampAndCounter.and(OVERFLOW_MASK) != 0L) {
-                    // counter overflow, let's wait for a new timestamp to come
-                    continue
+                    // counter overflow, let's increment timestamp by 1ms and reseed the counter
+                    newTimeStampAndCounter = (previousTimeMillis + 1L).shl(TIMESTAMP_BIAS_BITS).or(newCounter.toLong())
                 }
                 // try to save updated timestamp and counter values, retry everything on failure
                 if (timestampAndCounter.compareAndSet(previousTimeStampAndCounter, newTimeStampAndCounter)) {

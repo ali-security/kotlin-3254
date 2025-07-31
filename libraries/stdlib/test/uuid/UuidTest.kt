@@ -420,6 +420,18 @@ class UuidTest {
             uuidFromPast.mostSignificantBits.and(0x03FFL) != uuidFromTheFuture.mostSignificantBits.and(0x03FFL),
             "Uuids should have different rand_a values, but they do not: ${uuidFromPast.toHexDashString()}, ${uuidFromTheFuture.toHexDashString()}"
         )
+
+        // now let's check that generation won't stuck if clocks will stuck forever
+        var previousUuid = Uuid.generateV7(clock)
+        // we're using 12-bit wide counter, so let's generate more uuids
+        repeat(1.shl(14)) {
+            val uuid = Uuid.generateV7(clock)
+            assertTrue(
+                previousUuid < uuid,
+                "Uuids should be monotonic, but they are not: ${previousUuid.toHexDashString()}, ${uuid.toHexDashString()}"
+            )
+            previousUuid = uuid
+        }
     }
 
     private class NonMonotonicClock : Clock {
