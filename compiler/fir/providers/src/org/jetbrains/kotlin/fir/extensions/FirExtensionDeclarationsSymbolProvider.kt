@@ -111,7 +111,7 @@ class FirExtensionDeclarationsSymbolProvider private constructor(
                         result = it
                     }
                 }
-                result
+                result?.takeIf { it.origin.generated }
             }
             else -> {
                 val matchedExtensions = extensionsByTopLevelClassId.getValue()[classId] ?: return null
