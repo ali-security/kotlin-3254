@@ -3,3 +3,5 @@ org.jetbrains.kotlin.daemon.CompilerDaemonTest.testParallelDaemonStart,,STABLE
 org.jetbrains.kotlin.gradle.JsSetupConfigurationCacheIT.checkNodeJsSetup,,FLAKY
 org.jetbrains.kotlin.js.test.fir.FirLightTreeJsOldFrontendDiagnosticsTestGenerated.Export.testPrimitiveNullableTypes,,STABLE
 org.jetbrains.kotlin.js.test.fir.FirPsiJsOldFrontendDiagnosticsTestGenerated.Export.testPrimitiveNullableTypes,,STABLE
+org.jetbrains.kotlinx.serialization.runners.SerializationJdk11IrBoxTestGenerated.testSerializableOnJavaClass,KT-79735,FLAKY
+org.jetbrains.kotlinx.serialization.runners.SerializationJdk11FirLightTreeBoxTestGenerated.testSerializableOnJavaClass,KT-79735,FLAKY
