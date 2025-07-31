@@ -152,17 +152,9 @@ class IrValidatorTest {
                     tree,
                     TestIrBuiltins,
                     phaseName = "IrValidatorTest",
-                    IrValidatorConfig(
-                        checkTypes = true,
-                        checkValueScopes = true,
-                        checkTypeParameterScopes = true,
-                        checkCrossFileFieldUsage = true,
-                        checkAllKotlinFieldsArePrivate = true,
-                        checkVisibilities = true,
-                        checkVarargTypes = true,
-                        checkUnboundSymbols = true,
-                        checkInlineFunctionUseSites = { it.symbol.owner.name.toString() != "inlineFunctionUseSiteNotPermitted" }
-                    )
+                    IrValidatorConfig(checkTreeConsistency = true, checkUnboundSymbols = true)
+                        .withAllChecks()
+                        .withInlineFunctionCallsiteCheck { it.symbol.owner.name.toString() != "inlineFunctionUseSiteNotPermitted" }
                 )
                 assertEquals(expectedMessages, messageCollector.messages)
             }
