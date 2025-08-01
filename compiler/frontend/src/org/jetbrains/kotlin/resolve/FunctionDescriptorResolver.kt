@@ -329,7 +329,7 @@ class FunctionDescriptorResolver(
         val expectedValueParameters = expectedFunctionType.getValueParameters(functionDescriptor)
         val expectedParameterTypes = expectedValueParameters?.map { it.type.removeParameterNameAnnotation() }
         if (expectedValueParameters != null) {
-            if (expectedValueParameters.size == 1 && function is KtFunctionLiteral && function.getValueParameterList() == null) {
+            if (expectedValueParameters.size == 1 && function is KtFunctionLiteral && function.valueParameterList == null) {
                 // it parameter for lambda
                 val valueParameterDescriptor = expectedValueParameters.single()
                 val it = ValueParameterDescriptorImpl(

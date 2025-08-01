@@ -24,18 +24,18 @@ abstract class KtConstructor<T : KtConstructor<T>> : KtDeclarationStub<KotlinCon
 
     override fun isLocal() = false
 
-    override fun getValueParameterList() = getStubOrPsiChild(KtStubBasedElementTypes.VALUE_PARAMETER_LIST)
+    override val valueParameterList: KtParameterList? get() = getStubOrPsiChild(KtStubBasedElementTypes.VALUE_PARAMETER_LIST)
 
-    override fun getValueParameters() = valueParameterList?.parameters ?: emptyList()
+    override val valueParameters: List<KtParameter> get() = valueParameterList?.parameters ?: emptyList()
 
-    override fun getReceiverTypeReference() = null
+    override val receiverTypeReference: KtTypeReference? = null
 
-    override fun getTypeReference() = null
+    override val typeReference: KtTypeReference? = null
 
     @Throws(IncorrectOperationException::class)
     override fun setTypeReference(typeRef: KtTypeReference?) = throw IncorrectOperationException("setTypeReference to constructor")
 
-    override fun getColon() = findChildByType<PsiElement>(KtTokens.COLON)
+    override val colon: PsiElement? get() = findChildByType<PsiElement>(KtTokens.COLON)
 
     override fun getBodyExpression(): KtBlockExpression? = null
 

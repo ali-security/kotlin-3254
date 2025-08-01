@@ -1210,8 +1210,7 @@ public abstract class org/jetbrains/kotlin/psi/KtConstructor : org/jetbrains/kot
 	public synthetic fun getNameIdentifier ()Lcom/intellij/psi/PsiElement;
 	public fun getNameIdentifier ()Ljava/lang/Void;
 	public fun getPresentation ()Lcom/intellij/navigation/ItemPresentation;
-	public fun getReceiverTypeReference ()Ljava/lang/Void;
-	public synthetic fun getReceiverTypeReference ()Lorg/jetbrains/kotlin/psi/KtTypeReference;
+	public fun getReceiverTypeReference ()Lorg/jetbrains/kotlin/psi/KtTypeReference;
 	public fun getTextOffset ()I
 	public fun getTypeConstraintList ()Ljava/lang/Void;
 	public synthetic fun getTypeConstraintList ()Lorg/jetbrains/kotlin/psi/KtTypeConstraintList;
@@ -1219,8 +1218,7 @@ public abstract class org/jetbrains/kotlin/psi/KtConstructor : org/jetbrains/kot
 	public fun getTypeParameterList ()Ljava/lang/Void;
 	public synthetic fun getTypeParameterList ()Lorg/jetbrains/kotlin/psi/KtTypeParameterList;
 	public fun getTypeParameters ()Ljava/util/List;
-	public fun getTypeReference ()Ljava/lang/Void;
-	public synthetic fun getTypeReference ()Lorg/jetbrains/kotlin/psi/KtTypeReference;
+	public fun getTypeReference ()Lorg/jetbrains/kotlin/psi/KtTypeReference;
 	public fun getUseScope ()Lcom/intellij/psi/search/SearchScope;
 	public fun getValueParameterList ()Lorg/jetbrains/kotlin/psi/KtParameterList;
 	public fun getValueParameters ()Ljava/util/List;

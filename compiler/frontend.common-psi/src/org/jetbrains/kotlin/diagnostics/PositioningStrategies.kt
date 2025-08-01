@@ -241,7 +241,7 @@ object PositioningStrategies {
                             ?: element.nameIdentifier
                             ?: element
                     val startElement = if (element is KtFunctionLiteral) {
-                        element.getReceiverTypeReference()
+                        element.receiverTypeReference
                             ?: element.getValueParameterList()
                             ?: element
                     } else element

@@ -303,7 +303,7 @@ private fun resolveContextReceiversTypes(
     val contextReceivers = ktFunction.contextReceivers
 
     return Array(contextReceivers.size) {
-        contextReceivers[it]?.typeReference()?.let { typeRef -> resolveType(context, typeRef, typeResolver) }
+        contextReceivers[it].typeReference()?.let { typeRef -> resolveType(context, typeRef, typeResolver) }
     }
 }
 
