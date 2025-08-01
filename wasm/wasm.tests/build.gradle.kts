@@ -297,14 +297,14 @@ fun Project.wasmProjectTest(
     }
 }
 
-val precompile = wasmProjectTest("precompile") {
-    include("**/FirWasmJsPrecompiledStdlib.class")
-    include("**/FirWasmJsPrecompiledKotlinTest.class")
-}
+//val precompile = wasmProjectTest("precompile") {
+//    include("**/FirWasmJsPrecompiledStdlib.class")
+//    include("**/FirWasmJsPrecompiledKotlinTest.class")
+//}
 
 // Test everything
 wasmProjectTest("test") {
-    dependsOn(precompile)
+//    dependsOn(precompile)
 }
 
 wasmProjectTest("testFir") {

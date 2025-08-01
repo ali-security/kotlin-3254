@@ -12,7 +12,10 @@ import org.jetbrains.kotlin.ir.util.IdSignature
 import org.jetbrains.kotlin.ir.util.fqNameWhenAvailable
 import org.jetbrains.kotlin.wasm.ir.*
 
-fun getAllReferencedDeclarations(wasmCompiledFileFragment: WasmCompiledFileFragment): Set<IdSignature> {
+fun getAllReferencedDeclarations(
+    wasmCompiledFileFragment: WasmCompiledFileFragment,
+    additionalSignatures: Set<IdSignature>,
+): Set<IdSignature> {
     val signatures = mutableSetOf<IdSignature>()
     signatures.addAll(wasmCompiledFileFragment.functions.unbound.keys)
     signatures.addAll(wasmCompiledFileFragment.globalFields.unbound.keys)
@@ -21,6 +24,7 @@ fun getAllReferencedDeclarations(wasmCompiledFileFragment: WasmCompiledFileFragm
     wasmCompiledFileFragment.rttiElements?.let {
         signatures.addAll(it.globalReferences.unbound.keys)
     }
+    signatures.addAll(additionalSignatures)
     return signatures
 }
 

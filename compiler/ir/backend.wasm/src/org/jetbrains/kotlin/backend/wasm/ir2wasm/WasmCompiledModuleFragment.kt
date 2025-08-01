@@ -18,14 +18,17 @@ import org.jetbrains.kotlin.ir.util.IdSignature
 import org.jetbrains.kotlin.ir.util.fqNameWhenAvailable
 import org.jetbrains.kotlin.ir.util.getPackageFragment
 import org.jetbrains.kotlin.wasm.ir.*
+import org.jetbrains.kotlin.wasm.ir.WasmFunction
 import org.jetbrains.kotlin.wasm.ir.source.location.SourceLocation
+import kotlin.collections.mutableListOf
 
 class BuiltinIdSignatures(
     val throwable: IdSignature?,
-    val tryGetAssociatedObject: IdSignature?,
+    val kotlinAny: IdSignature?,
     val jsToKotlinAnyAdapter: IdSignature?,
     val unitGetInstance: IdSignature?,
     val runRootSuites: IdSignature?,
+    val registerModuleDescriptor: IdSignature?,
 )
 
 class SpecialITableTypes(
@@ -84,11 +87,11 @@ class WasmCompiledModuleFragment(
     private val serviceCodeLocation = SourceLocation.NoLocation("Generated service code")
     private val parameterlessNoReturnFunctionType = WasmFunctionType(emptyList(), emptyList())
 
-    private inline fun tryFindBuiltInFunction(select: (BuiltinIdSignatures) -> IdSignature?): WasmFunction.Defined? {
+    private inline fun tryFindBuiltInFunction(select: (BuiltinIdSignatures) -> IdSignature?): WasmFunction? {
         for (fragment in wasmCompiledFileFragments) {
             val builtinSignatures = fragment.builtinIdSignatures ?: continue
             val signature = select(builtinSignatures) ?: continue
-            return fragment.functions.defined[signature] as? WasmFunction.Defined
+            return fragment.functions.defined[signature]
         }
         return null
     }
@@ -154,11 +157,16 @@ class WasmCompiledModuleFragment(
         exports: MutableList<WasmExport<*>>,
         initializeUnit: Boolean,
         initializeStringPool: Boolean,
+        wasmElements: MutableList<WasmElement>,
+        additionalTypes: MutableList<WasmTypeDeclaration>,
     ) {
         val fieldInitializerFunction = createFieldInitializerFunction(initializeStringPool)
         definedFunctions.add(fieldInitializerFunction)
 
-        val masterInitFunction = createAndExportMasterInitFunction(fieldInitializerFunction, initializeUnit)
+        val associatedObjectGetter = createAssociatedObjectGetterFunction(wasmElements, additionalTypes)
+        definedFunctions.add(associatedObjectGetter)
+
+        val masterInitFunction = createAndExportMasterInitFunction(fieldInitializerFunction, associatedObjectGetter, initializeUnit)
         exports.add(WasmExport.Function("_initialize", masterInitFunction))
         definedFunctions.add(masterInitFunction)
 
@@ -174,7 +182,6 @@ class WasmCompiledModuleFragment(
         bindUnboundSymbols()
         val canonicalFunctionTypes = bindUnboundFunctionTypes()
 
-        createTryGetAssociatedObjectFunction()
 
         val data = mutableListOf<WasmData>()
         bindStringPoolSymbols(data)
@@ -188,15 +195,17 @@ class WasmCompiledModuleFragment(
         val memories = createAndExportMemory(exports, moduleImportName)
         val (importedMemories, definedMemories) = memories.partition { it.importPair != null }
 
-        createAndExportServiceFunctions(definedFunctions, exports, initializeUnit, initializeStringPool)
+        val additionalTypes = mutableListOf<WasmTypeDeclaration>()
+        additionalTypes.add(parameterlessNoReturnFunctionType)
+
+        val elements = mutableListOf<WasmElement>()
+        createAndExportServiceFunctions(definedFunctions, exports, initializeUnit, initializeStringPool, elements, additionalTypes)
 
         val tags = getTags()
         require(tags.size <= 1) { "Having more than 1 tag is not supported" }
 
         val (importedTags, definedTags) = tags.partition { it.importPair != null }
 
-        val additionalTypes = mutableListOf<WasmTypeDeclaration>()
-        additionalTypes.add(parameterlessNoReturnFunctionType)
         tags.forEach { additionalTypes.add(it.type) }
 
         val syntheticTypes = mutableListOf<WasmTypeDeclaration>()
@@ -225,7 +234,7 @@ class WasmCompiledModuleFragment(
             importedGlobals = importedGlobals,
             exports = exports,
             startFunction = null,  // Module is initialized via export call
-            elements = emptyList(),
+            elements = elements,
             data = data,
             dataCount = true,
             tags = definedTags
@@ -408,7 +417,11 @@ class WasmCompiledModuleFragment(
         return listOf(memory)
     }
 
-    private fun createAndExportMasterInitFunction(fieldInitializerFunction: WasmFunction, initializeUnit: Boolean,): WasmFunction.Defined {
+    private fun createAndExportMasterInitFunction(
+        fieldInitializerFunction: WasmFunction,
+        tryGetAssociatedObject: WasmFunction,
+        initializeUnit: Boolean,
+    ): WasmFunction.Defined {
         val masterInitFunction = WasmFunction.Defined("_initialize", WasmSymbol(parameterlessNoReturnFunctionType))
         with(WasmExpressionBuilder(masterInitFunction.instructions)) {
             if (initializeUnit) {
@@ -416,6 +429,12 @@ class WasmCompiledModuleFragment(
                     ?: compilationException("kotlin.Unit_getInstance is not file in fragments", null)
                 buildCall(WasmSymbol(unitGetInstance), serviceCodeLocation)
             }
+
+            val registerModuleDescriptor = tryFindBuiltInFunction { it.registerModuleDescriptor }
+                ?: compilationException("kotlin.registerModuleDescriptor is not file in fragments", null)
+            buildInstr(WasmOp.REF_FUNC, serviceCodeLocation, WasmImmediate.FuncIdx(WasmSymbol(tryGetAssociatedObject)))
+            buildInstr(WasmOp.CALL, serviceCodeLocation, WasmImmediate.FuncIdx(WasmSymbol(registerModuleDescriptor)))
+
             buildCall(WasmSymbol(fieldInitializerFunction), serviceCodeLocation)
             wasmCompiledFileFragments.forEach { fragment ->
                 fragment.mainFunctionWrappers.forEach { signature ->
@@ -429,8 +448,27 @@ class WasmCompiledModuleFragment(
         return masterInitFunction
     }
 
-    private fun createTryGetAssociatedObjectFunction() {
-        val tryGetAssociatedObject = tryFindBuiltInFunction { it.tryGetAssociatedObject } ?: return // Removed by DCE
+    private fun createAssociatedObjectGetterFunction(
+        wasmElements: MutableList<WasmElement>,
+        additionalTypes: MutableList<WasmTypeDeclaration>
+    ): WasmFunction.Defined {
+        val kotlinAny = tryFindBuiltInType { it.kotlinAny }
+            ?: compilationException("kotlin.Any is not found in fragments", null)
+
+        val nullableAnyWasmType = WasmRefNullType(WasmHeapType.Type(WasmSymbol(kotlinAny)))
+        val associatedObjectGetterType = WasmFunctionType(listOf(WasmI64, WasmI64), listOf(nullableAnyWasmType))
+        additionalTypes.add(associatedObjectGetterType)
+
+        val associatedObjectGetter = WasmFunction.Defined("_associatedObjectGetter", WasmSymbol(associatedObjectGetterType))
+        // Make this function possible to func.ref
+        wasmElements.add(
+            WasmElement(
+                type = WasmFuncRef,
+                values = listOf(WasmTable.Value.Function(WasmSymbol(associatedObjectGetter))),
+                mode = WasmElement.Mode.Declarative
+            )
+        )
+
         val jsToKotlinAnyAdapter by lazy {
             tryFindBuiltInFunction { it.jsToKotlinAnyAdapter }
                 ?: compilationException("kotlin.jsToKotlinAnyAdapter is not found in fragments", null)
@@ -439,8 +477,8 @@ class WasmCompiledModuleFragment(
         val allDefinedFunctions = mutableMapOf<IdSignature, WasmFunction>()
         wasmCompiledFileFragments.forEach { allDefinedFunctions.putAll(it.functions.defined) }
 
-        tryGetAssociatedObject.instructions.clear()
-        with(WasmExpressionBuilder(tryGetAssociatedObject.instructions)) {
+        associatedObjectGetter.instructions.clear()
+        with(WasmExpressionBuilder(associatedObjectGetter.instructions)) {
             wasmCompiledFileFragments.forEach { fragment ->
                 for ((klassId, associatedObjectsInstanceGetters) in fragment.classAssociatedObjectsInstanceGetters) {
                     buildGetLocal(WasmLocal(0, "classId", WasmI64, true), serviceCodeLocation)
@@ -468,6 +506,7 @@ class WasmCompiledModuleFragment(
             buildRefNull(WasmHeapType.Simple.None, serviceCodeLocation)
             buildInstr(WasmOp.RETURN, serviceCodeLocation)
         }
+        return associatedObjectGetter
     }
 
     private fun createStartUnitTestsFunction(): WasmFunction.Defined? {

@@ -176,7 +176,7 @@ private fun WasmBackendContext.defineBuiltinSignatures(irFile: IrFile, wasmFileC
         irFile == it.owner.fileOrNull
     }
 
-    val tryGetAssociatedObjectFunction = wasmSymbols.tryGetAssociatedObject.takeIf {
+    val kotlinAnyClass = irBuiltIns.anyClass.takeIf {
         irFile == it.owner.fileOrNull
     }
 
@@ -197,11 +197,16 @@ private fun WasmBackendContext.defineBuiltinSignatures(irFile: IrFile, wasmFileC
         irFile == it.owner.fileOrNull
     }
 
+    val registerModuleDescriptor = wasmSymbols.registerModuleDescriptor.takeIf {
+        irFile == it.owner.fileOrNull
+    }
+
     wasmFileCodegenContext.defineBuiltinIdSignatures(
         throwable = throwableClass,
-        tryGetAssociatedObject = tryGetAssociatedObjectFunction,
+        kotlinAny = kotlinAnyClass,
         jsToKotlinAnyAdapter = jsToKotlinAnyAdapter,
         unitGetInstance = unitGetInstance?.symbol,
         runRootSuites = runRootSuites,
+        registerModuleDescriptor = registerModuleDescriptor,
     )
 }

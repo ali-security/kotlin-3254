@@ -637,10 +637,11 @@ class WasmDeserializer(inputStream: InputStream, private val skipLocalNames: Boo
         deserializeNullable {
             BuiltinIdSignatures(
                 throwable = deserializeNullable(::deserializeIdSignature),
-                tryGetAssociatedObject = deserializeNullable(::deserializeIdSignature),
+                kotlinAny = deserializeNullable(::deserializeIdSignature),
                 jsToKotlinAnyAdapter = deserializeNullable(::deserializeIdSignature),
                 unitGetInstance = deserializeNullable(::deserializeIdSignature),
                 runRootSuites = deserializeNullable(::deserializeIdSignature),
+                registerModuleDescriptor = deserializeNullable(::deserializeIdSignature),
             )
         }
 

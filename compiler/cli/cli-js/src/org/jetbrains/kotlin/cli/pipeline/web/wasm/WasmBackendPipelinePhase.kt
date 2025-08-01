@@ -31,6 +31,7 @@ import org.jetbrains.kotlin.ir.backend.js.loadIrForSingleModule
 import org.jetbrains.kotlin.ir.backend.js.moduleName
 import org.jetbrains.kotlin.ir.declarations.IdSignatureRetriever
 import org.jetbrains.kotlin.ir.declarations.IrModuleFragment
+import org.jetbrains.kotlin.ir.symbols.UnsafeDuringIrConstructionAPI
 import org.jetbrains.kotlin.js.config.*
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.util.PhaseType
@@ -325,7 +326,13 @@ fun compileWasmLoweredFragmentsForSingleModule(
     val dependenciesModules = mutableListOf<ModuleImport.WasmModuleImport>()
 
     val mainModuleFileFragment = codeGenerator.generateModuleAsSingleFileFragmentWithIECExport(mainModuleFragment)
-    val importedDeclarations = getAllReferencedDeclarations(mainModuleFileFragment)
+
+    // This signature needed to dynamically load module services
+    @OptIn(UnsafeDuringIrConstructionAPI::class)
+    val additionalSignatureToImport =
+        if (isStdlib) emptySet() else setOf(signatureRetriever.declarationSignature(backendContext.wasmSymbols.registerModuleDescriptor.owner)!!)
+
+    val importedDeclarations = getAllReferencedDeclarations(mainModuleFileFragment, additionalSignatureToImport)
 
     val dependencyModules = loweredIrFragments.dropLast(1)
     dependencyModules.mapTo(wasmCompiledFileFragments) {

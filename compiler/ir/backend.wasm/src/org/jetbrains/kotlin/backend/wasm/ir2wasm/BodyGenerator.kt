@@ -1166,6 +1166,22 @@ class BodyGenerator(
                 body.buildInstr(WasmOp.ARRAY_NEW_DATA, location, arrayGcType, WasmImmediate.DataIdx(0))
             }
 
+            wasmSymbols.associatedObjectGetter -> {
+                val associatedObjectGetterType =
+                    WasmImmediate.TypeIdx(wasmFileCodegenContext.referenceFunctionType(backendContext.wasmSymbols.tryGetAssociatedObject))
+
+                body.buildInstr(
+                    op = WasmOp.REF_CAST,
+                    location = location,
+                    associatedObjectGetterType
+                )
+                body.buildInstr(
+                    op = WasmOp.CALL_REF,
+                    location = location,
+                    associatedObjectGetterType,
+                )
+            }
+
             else -> {
                 return false
             }
