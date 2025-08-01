@@ -217,6 +217,7 @@ open class PsiRawFirBuilder(
         override val KtDestructuringDeclarationEntry.initializerName: Name?
             get() = initializer?.getReferencedNameAsName()
 
+        @Suppress("EXTENSION_SHADOWED_BY_MEMBER")
         override val KtDestructuringDeclarationEntry.isVar: Boolean
             get() = isVar
 

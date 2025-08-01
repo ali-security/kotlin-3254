@@ -1320,7 +1320,7 @@ org.jetbrains.kotlin.psi.KtValueArgumentName
 org.jetbrains.kotlin.psi.KtValueArgumentName:constructor(ASTNode)
 org.jetbrains.kotlin.psi.KtValueArgumentName:constructor(KotlinPlaceHolderStub<KtValueArgumentName>)
 org.jetbrains.kotlin.psi.KtVariableDeclaration
-org.jetbrains.kotlin.psi.KtVariableDeclaration:isVar()
+org.jetbrains.kotlin.psi.KtVariableDeclaration.isVar
 org.jetbrains.kotlin.psi.KtVisitor
 org.jetbrains.kotlin.psi.KtVisitor:visitAnnotatedExpression(KtAnnotatedExpression, D)
 org.jetbrains.kotlin.psi.KtVisitor:visitAnnotation(KtAnnotation, D)
