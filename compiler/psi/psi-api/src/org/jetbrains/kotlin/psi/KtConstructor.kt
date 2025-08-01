@@ -37,9 +37,9 @@ abstract class KtConstructor<T : KtConstructor<T>> : KtDeclarationStub<KotlinCon
 
     override val colon: PsiElement? get() = findChildByType<PsiElement>(KtTokens.COLON)
 
-    override fun getBodyExpression(): KtBlockExpression? = null
+    override val bodyExpression: KtBlockExpression? = null
 
-    override fun getEqualsToken() = null
+    override val equalsToken: PsiElement? = null
 
     override fun hasBlockBody() = hasBody()
 

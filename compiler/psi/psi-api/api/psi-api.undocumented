@@ -540,15 +540,15 @@ org.jetbrains.kotlin.psi.KtDeclarationStub:constructor(ASTNode)
 org.jetbrains.kotlin.psi.KtDeclarationStub:constructor(T, IStubElementType)
 org.jetbrains.kotlin.psi.KtDeclarationStub:getModificationStamp()
 org.jetbrains.kotlin.psi.KtDeclarationWithBody
-org.jetbrains.kotlin.psi.KtDeclarationWithBody:getBodyBlockExpression()
-org.jetbrains.kotlin.psi.KtDeclarationWithBody:getBodyExpression()
-org.jetbrains.kotlin.psi.KtDeclarationWithBody:getContractDescription()
-org.jetbrains.kotlin.psi.KtDeclarationWithBody:getEqualsToken()
-org.jetbrains.kotlin.psi.KtDeclarationWithBody:getValueParameters()
-org.jetbrains.kotlin.psi.KtDeclarationWithBody:hasBlockBody()
-org.jetbrains.kotlin.psi.KtDeclarationWithBody:hasBody()
-org.jetbrains.kotlin.psi.KtDeclarationWithBody:hasContractEffectList()
-org.jetbrains.kotlin.psi.KtDeclarationWithBody:hasDeclaredReturnType()
+org.jetbrains.kotlin.psi.KtDeclarationWithBody.bodyBlockExpression
+org.jetbrains.kotlin.psi.KtDeclarationWithBody.bodyExpression
+org.jetbrains.kotlin.psi.KtDeclarationWithBody.contractDescription
+org.jetbrains.kotlin.psi.KtDeclarationWithBody.equalsToken
+org.jetbrains.kotlin.psi.KtDeclarationWithBody.hasBlockBody()
+org.jetbrains.kotlin.psi.KtDeclarationWithBody.hasBody()
+org.jetbrains.kotlin.psi.KtDeclarationWithBody.hasContractEffectList()
+org.jetbrains.kotlin.psi.KtDeclarationWithBody.hasDeclaredReturnType()
+org.jetbrains.kotlin.psi.KtDeclarationWithBody.valueParameters
 org.jetbrains.kotlin.psi.KtDeclarationWithInitializer
 org.jetbrains.kotlin.psi.KtDeclarationWithInitializer:getInitializer()
 org.jetbrains.kotlin.psi.KtDeclarationWithInitializer:hasInitializer()

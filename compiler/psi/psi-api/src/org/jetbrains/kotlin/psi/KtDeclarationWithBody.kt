@@ -2,62 +2,42 @@
  * Copyright 2010-2025 JetBrains s.r.o. and Kotlin Programming Language contributors.
  * Use of this source code is governed by the Apache 2.0 license that can be found in the license/LICENSE.txt file.
  */
+package org.jetbrains.kotlin.psi
 
-package org.jetbrains.kotlin.psi;
+import com.intellij.psi.PsiElement
 
-import com.intellij.psi.PsiElement;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+interface KtDeclarationWithBody : KtDeclaration {
+    val bodyExpression: KtExpression?
 
-import java.util.List;
+    val equalsToken: PsiElement?
 
-public interface KtDeclarationWithBody extends KtDeclaration {
-    @Nullable
-    KtExpression getBodyExpression();
+    override fun getName(): String?
 
-    @Nullable
-    PsiElement getEqualsToken();
+    val contractDescription: KtContractEffectList?
+        get() = null
 
-    @Override
-    @Nullable
-    String getName();
-
-    @Nullable
-    default KtContractEffectList getContractDescription() {
-        return null;
-    }
-
-    default boolean hasContractEffectList() {
-        return getContractDescription() != null;
+    fun hasContractEffectList(): Boolean {
+        return contractDescription != null
     }
 
     /**
      * Whether the declaration may have a contract.
-     * </p>
-     * <b>false</b> means that the declaration is definitely having no contract,
-     * but <b>true</b> doesn't guarantee that the declaration has a contract.
+     *
+     * `false` means that the declaration is definitely having no contract,
+     * but `true` doesn't guarantee that the declaration has a contract.
      */
-    default boolean mayHaveContract() {
-        return false;
+    fun mayHaveContract(): Boolean {
+        return false
     }
 
-    boolean hasBlockBody();
+    fun hasBlockBody(): Boolean
 
-    boolean hasBody();
+    fun hasBody(): Boolean
 
-    boolean hasDeclaredReturnType();
+    fun hasDeclaredReturnType(): Boolean
 
-    @NotNull
-    List<KtParameter> getValueParameters();
+    val valueParameters: List<KtParameter>
 
-    @Nullable
-    default KtBlockExpression getBodyBlockExpression() {
-        KtExpression bodyExpression = getBodyExpression();
-        if (bodyExpression instanceof KtBlockExpression) {
-            return (KtBlockExpression) bodyExpression;
-        }
-
-        return null;
-    }
+    val bodyBlockExpression: KtBlockExpression?
+        get() = bodyExpression as? KtBlockExpression
 }
-
