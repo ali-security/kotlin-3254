@@ -52,7 +52,7 @@ class SplittingModuleTransformerForBoxTests(
             1 -> boxFiles.single()
             0 -> error("Codegen test should contain one global `fun box()`")
             else -> boxFiles.singleOrNull { it.originalContent.contains("\nfun box()") }
-                ?: error("Too may `fun box()` are defined. Cannot heuristically detect, which one is global")
+                ?: error("Too many `fun box()` are defined. Cannot heuristically detect which one is global")
         }
         val firstModuleFiles = realFiles.filter { it != secondModuleFile }
         val firstModule = TestModule(
@@ -85,13 +85,12 @@ class SplittingTestConfigurator(testServices: TestServices) : MetaTestConfigurat
         get() = listOf(service(::SplitStateProvider))
 
     override fun shouldSkipTest(): Boolean {
+        if (!testServices.splitStateProvider.hasBeenSplit) return true
         val modules = testServices.moduleStructure.modules
-        if (modules.size != 2) return true
-
+        assert(modules.size == 2) // It's expected that SplittingModuleTransformerForBoxTests splits testData to exactly two modules
         val (moduleLib, moduleMain) = modules
 
-        val settings = moduleLib.languageVersionSettings
-        if (settings.supportsFeature(LanguageFeature.MultiPlatformProjects)) {
+        if (moduleLib.languageVersionSettings.supportsFeature(LanguageFeature.MultiPlatformProjects)) {
             // Multiplatform tests must not be tested with SplittingModuleTransformerForBoxTests
             return true
         }
@@ -118,7 +117,7 @@ class SplittingTestConfigurator(testServices: TestServices) : MetaTestConfigurat
                     return true
             }
         }
-        return !testServices.splitStateProvider.hasBeenSplit
+        return false // Don't skip its execution, since the test has been split, and no counter-patterns found
     }
 }
 
