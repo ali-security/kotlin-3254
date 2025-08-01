@@ -1199,8 +1199,7 @@ public abstract class org/jetbrains/kotlin/psi/KtConstructor : org/jetbrains/kot
 	public fun getColon ()Lcom/intellij/psi/PsiElement;
 	public fun getConstructorKeyword ()Lcom/intellij/psi/PsiElement;
 	public abstract fun getContainingClassOrObject ()Lorg/jetbrains/kotlin/psi/KtClassOrObject;
-	public synthetic fun getEqualsToken ()Lcom/intellij/psi/PsiElement;
-	public fun getEqualsToken ()Ljava/lang/Void;
+	public fun getEqualsToken ()Lcom/intellij/psi/PsiElement;
 	public fun getFqName ()Ljava/lang/Void;
 	public synthetic fun getFqName ()Lorg/jetbrains/kotlin/name/FqName;
 	public fun getIdentifyingElement ()Lcom/intellij/psi/PsiElement;

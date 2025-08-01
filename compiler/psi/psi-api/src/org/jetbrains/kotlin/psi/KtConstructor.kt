@@ -22,7 +22,7 @@ abstract class KtConstructor<T : KtConstructor<T>> : KtDeclarationStub<KotlinCon
 
     abstract fun getContainingClassOrObject(): KtClassOrObject
 
-    override fun isLocal() = false
+    override val isLocal: Boolean = false
 
     override val valueParameterList: KtParameterList? get() = getStubOrPsiChild(KtStubBasedElementTypes.VALUE_PARAMETER_LIST)
 
