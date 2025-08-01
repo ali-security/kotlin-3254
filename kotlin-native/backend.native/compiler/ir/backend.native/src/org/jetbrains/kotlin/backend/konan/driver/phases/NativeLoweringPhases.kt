@@ -16,6 +16,7 @@ import org.jetbrains.kotlin.backend.common.lower.inline.LocalClassesInInlineLamb
 import org.jetbrains.kotlin.backend.common.lower.optimizations.PropertyAccessorInlineLowering
 import org.jetbrains.kotlin.backend.common.lower.optimizations.LivenessAnalysis
 import org.jetbrains.kotlin.backend.common.phaser.*
+import org.jetbrains.kotlin.backend.common.phaser.KlibIrValidationBeforeLoweringPhase
 import org.jetbrains.kotlin.backend.common.runOnFilePostfix
 import org.jetbrains.kotlin.backend.common.wrapWithCompilationException
 import org.jetbrains.kotlin.ir.util.isReifiedTypeParameter
@@ -63,7 +64,7 @@ internal fun PhaseEngine<NativeGenerationState>.runModuleWisePhase(
 
 internal val validateIrBeforeLowering = createSimpleNamedCompilerPhase<NativeGenerationState, IrModuleFragment>(
         name = "ValidateIrBeforeLowering",
-        op = { context, module -> IrValidationBeforeLoweringPhase(context.context).lower(module) }
+        op = { context, module -> KlibIrValidationBeforeLoweringPhase(context.context).lower(module) }
 )
 
 internal val validateIrAfterInliningOnlyPrivateFunctions = createSimpleNamedCompilerPhase<NativeGenerationState, IrModuleFragment>(
