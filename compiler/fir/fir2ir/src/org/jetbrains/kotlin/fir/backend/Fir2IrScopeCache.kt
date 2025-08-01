@@ -14,18 +14,6 @@ import org.jetbrains.kotlin.ir.symbols.*
 class Fir2IrScopeCache() {
     private val parameterCache = mutableMapOf<FirValueParameter, IrValueParameterSymbol>()
 
-    constructor(
-        parameters: Map<FirValueParameter, IrValueParameterSymbol>,
-        variables: Map<FirVariable, IrVariableSymbol>,
-        localFunctions: Map<FirFunction, IrSimpleFunctionSymbol>,
-        delegatedProperties: Map<FirProperty, IrLocalDelegatedPropertySymbol>,
-    ) : this() {
-        parameterCache.putAll(parameters)
-        variableCache.putAll(variables)
-        localFunctionCache.putAll(localFunctions)
-        delegatedPropertyCache.putAll(delegatedProperties)
-    }
-
     val parameters: Map<FirValueParameter, IrValueParameterSymbol>
         get() = parameterCache
 
@@ -43,6 +31,18 @@ class Fir2IrScopeCache() {
 
     val delegatedProperties: Map<FirProperty, IrLocalDelegatedPropertySymbol>
         get() = delegatedPropertyCache
+
+    constructor(
+        parameters: Map<FirValueParameter, IrValueParameterSymbol>,
+        variables: Map<FirVariable, IrVariableSymbol>,
+        localFunctions: Map<FirFunction, IrSimpleFunctionSymbol>,
+        delegatedProperties: Map<FirProperty, IrLocalDelegatedPropertySymbol>,
+    ) : this() {
+        parameterCache.putAll(parameters)
+        variableCache.putAll(variables)
+        localFunctionCache.putAll(localFunctions)
+        delegatedPropertyCache.putAll(delegatedProperties)
+    }
 
     fun getParameter(parameter: FirValueParameter): IrValueParameterSymbol? {
         return parameterCache[parameter]
