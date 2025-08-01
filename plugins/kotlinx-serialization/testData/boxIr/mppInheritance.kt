@@ -15,13 +15,13 @@ public abstract class Something {
 }
 
 // MODULE: jvm()()(common)
-// TARGET_PLATFORM: Jvm
+// TARGET_PLATFORM: JVM
 // FILE: jvm.kt
 
 fun intermediate() {}
 
 // MODULE: jvm2(jvm)()()
-// TARGET_PLATFORM: Jvm
+// TARGET_PLATFORM: JVM
 // FILE: main.kt
 
 import kotlinx.serialization.*
