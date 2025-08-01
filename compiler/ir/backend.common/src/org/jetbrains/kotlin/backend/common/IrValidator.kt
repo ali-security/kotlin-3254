@@ -25,7 +25,6 @@ import org.jetbrains.kotlin.ir.declarations.IrDeclarationBase
 import org.jetbrains.kotlin.ir.declarations.IrFile
 import org.jetbrains.kotlin.ir.declarations.IrModuleFragment
 import org.jetbrains.kotlin.ir.expressions.IrConstructorCall
-import org.jetbrains.kotlin.ir.expressions.IrFunctionAccessExpression
 import org.jetbrains.kotlin.ir.symbols.IrSymbol
 import org.jetbrains.kotlin.ir.types.IrType
 import org.jetbrains.kotlin.ir.util.IrTreeSymbolsVisitor
@@ -51,23 +50,6 @@ data class IrValidatorConfig(
     val checkInlineFunctionUseSites: InlineFunctionUseSiteChecker? = null,
 )
 
-fun interface InlineFunctionUseSiteChecker {
-    /**
-     * Check if the given use site of the inline function is permitted at the current phase of IR validation.
-     *
-     * Example 1: Check use sites after inlining all private functions.
-     *   It is permitted to have only use sites of non-private functions in the whole IR tree. So, for a use site
-     *   of a private inline function we should return `false` if it is met in the IR. For any other use site
-     *   we should return `true` (== permitted).
-     *
-     * Example 2: Check use sites after inlining all functions.
-     *   Normally, no use sites of inline functions should remain in the whole IR tree. So, if we met one we shall
-     *   return `false` (== not permitted). However, there are a few exceptions that are temporarily permitted.
-     *   For example, `inline external` intrinsics in Native (KT-66734).
-     */
-    fun isPermitted(inlineFunctionUseSite: IrFunctionAccessExpression): Boolean
-}
-
 private class IrValidator(
     val validatorConfig: IrValidatorConfig,
     val irBuiltIns: IrBuiltIns,
@@ -77,7 +59,7 @@ private class IrValidator(
         throw IllegalStateException("IR validation must start from files, modules, or declarations")
 
     override fun visitFile(declaration: IrFile) {
-        val context = CheckerContext(irBuiltIns, validatorConfig.checkInlineFunctionUseSites, declaration, reportError)
+        val context = CheckerContext(irBuiltIns, declaration, reportError)
         val fileValidator = IrFileValidator(validatorConfig, context)
         declaration.acceptVoid(fileValidator)
     }
@@ -85,7 +67,7 @@ private class IrValidator(
     override fun visitModuleFragment(declaration: IrModuleFragment) = declaration.acceptChildrenVoid(this)
 
     override fun visitDeclaration(declaration: IrDeclarationBase) {
-        val context = CheckerContext(irBuiltIns, validatorConfig.checkInlineFunctionUseSites, declaration.file, reportError)
+        val context = CheckerContext(irBuiltIns, declaration.file, reportError)
         val fileValidator = IrFileValidator(validatorConfig, context)
         declaration.acceptVoid(fileValidator)
     }
@@ -97,7 +79,7 @@ private class IrFileValidator(
 ) : IrTreeSymbolsVisitor() {
     private val contextUpdaters: MutableSet<ContextUpdater> = mutableSetOf(ParentChainUpdater)
     private val elementCheckers: MutableList<IrElementChecker<*>> = mutableListOf(
-        IrNoInlineUseSitesChecker, IrSetValueAssignabilityChecker,
+        IrSetValueAssignabilityChecker,
         IrFunctionDispatchReceiverChecker, IrFunctionParametersChecker, IrConstructorReceiverChecker,
         IrPrivateDeclarationOverrideChecker, IrTypeOperatorTypeOperandChecker,
         IrPropertyAccessorsChecker, IrFunctionPropertiesChecker,
@@ -139,6 +121,9 @@ private class IrFileValidator(
         }
         if (config.checkIrExpressionBodyInFunction) {
             elementCheckers.add(IrExpressionBodyInFunctionChecker)
+        }
+        config.checkInlineFunctionUseSites?.let {
+            elementCheckers.add(IrNoInlineUseSitesChecker(it))
         }
 
         for (checker in elementCheckers + symbolCheckers + typeCheckers) {
