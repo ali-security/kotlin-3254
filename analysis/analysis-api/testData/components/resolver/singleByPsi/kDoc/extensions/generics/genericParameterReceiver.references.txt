@@ -6,7 +6,7 @@
 <caret_2>:
   KDocName(88,104): 'PARAM.genericExt'
     KDocReference:
-      Nothing (Unresolved reference)
+      (in test) fun <T> T.genericExt()
 
 <caret_3>:
   KDocName(175,193): 'CLASS_PARAM.anyExt'
@@ -16,4 +16,4 @@
 <caret_4>:
   KDocName(203,225): 'CLASS_PARAM.genericExt'
     KDocReference:
-      Nothing (Unresolved reference)
+      (in test) fun <T> T.genericExt()

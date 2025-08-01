@@ -6,7 +6,7 @@
 <caret_2>:
   KDocName(22,38): 'T.foxAnyNullable'
     KDocReference:
-      Nothing (Unresolved reference)
+      (in ROOT) fun kotlin.Any?.foxAnyNullable()
 
 <caret_3>:
   KDocName(44,52): 'T.foxInt'

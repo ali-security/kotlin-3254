@@ -41,9 +41,9 @@ internal object KDocReferenceResolver {
      * [receiverClassReference] is an optional receiver type in
      * the case of extension function references (see [getTypeQualifiedExtensions]).
      */
-    private data class ResolveResult(val symbol: KaSymbol, val receiverClassReference: KaClassLikeSymbol?)
+    private data class ResolveResult(val symbol: KaSymbol, val receiverClassReference: KaClassifierSymbol?)
 
-    private fun KaSymbol.toResolveResult(receiverClassReference: KaClassLikeSymbol? = null): ResolveResult =
+    private fun KaSymbol.toResolveResult(receiverClassReference: KaClassifierSymbol? = null): ResolveResult =
         ResolveResult(symbol = this, receiverClassReference)
 
     /**
@@ -390,13 +390,13 @@ internal object KDocReferenceResolver {
     private fun KaSession.getReceiverTypeCandidates(
         receiverTypeName: FqName,
         contextElement: KtElement
-    ): Sequence<Collection<KaClassLikeSymbol>> =
+    ): Sequence<Collection<KaClassifierSymbol>> =
         getSymbolsFromScopes(receiverTypeName, contextElement).ifEmpty {
             sequence {
                 getNonImportedSymbolsByFullyQualifiedName(receiverTypeName).ifNotEmpty { yield(this) }
             }
         }.mapNotNull {
-            it.filterIsInstance<KaClassLikeSymbol>().ifEmpty { null }
+            it.filterIsInstance<KaClassifierSymbol>().ifEmpty { null }
         }
 
 
