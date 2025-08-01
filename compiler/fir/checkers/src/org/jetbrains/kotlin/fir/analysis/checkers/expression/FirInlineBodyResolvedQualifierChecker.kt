@@ -6,12 +6,14 @@
 package org.jetbrains.kotlin.fir.analysis.checkers.expression
 
 import org.jetbrains.kotlin.diagnostics.DiagnosticReporter
+import org.jetbrains.kotlin.fir.FirElement
 import org.jetbrains.kotlin.fir.analysis.checkers.MppCheckerKind
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
 import org.jetbrains.kotlin.fir.analysis.checkers.isExplicitParentOfResolvedQualifier
 import org.jetbrains.kotlin.fir.analysis.checkers.type.FirInlineExposedLessVisibleTypeChecker
 import org.jetbrains.kotlin.fir.declarations.fullyExpandedClass
 import org.jetbrains.kotlin.fir.declarations.utils.isCompanion
+import org.jetbrains.kotlin.fir.expressions.FirQualifiedAccessExpression
 import org.jetbrains.kotlin.fir.expressions.FirResolvedQualifier
 import org.jetbrains.kotlin.fir.resolve.defaultType
 import org.jetbrains.kotlin.utils.addToStdlib.applyIf
@@ -34,6 +36,21 @@ object FirInlineBodyResolvedQualifierChecker : FirResolvedQualifierChecker(MppCh
             )
         }
 
-        FirInlineExposedLessVisibleTypeChecker.check(accessedClass.defaultType(), source, inlineFunctionBodyContext)
+        val parentElement = context.containingElements.elementAtOrNull(context.containingElements.size - 2)
+
+        if (!expression.isNonExpressionReceiverOf(parentElement)) {
+            FirInlineExposedLessVisibleTypeChecker.check(accessedClass.defaultType(), source, inlineFunctionBodyContext)
+        }
+    }
+
+    /**
+     * True when [parentElement] is a [FirQualifiedAccessExpression] and [this] is its explicit receiver without being
+     * the dispatch or extension receiver, meaning the receiver is a qualifier that's not an expression.
+     */
+    private fun FirResolvedQualifier.isNonExpressionReceiverOf(parentElement: FirElement?): Boolean {
+        return parentElement is FirQualifiedAccessExpression
+                && parentElement.explicitReceiver == this
+                && parentElement.extensionReceiver != this
+                && parentElement.dispatchReceiver != this
     }
 }
