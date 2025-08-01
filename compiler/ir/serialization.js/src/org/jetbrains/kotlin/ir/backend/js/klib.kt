@@ -468,7 +468,6 @@ fun serializeModuleIntoKlib(
                     WasmKlibCheckers.makeChecker(
                         irDiagnosticReporter,
                         configuration,
-                        doModuleLevelChecks = true,
                         cleanFilesIrData,
                         moduleExportedNames,
                     )
