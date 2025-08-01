@@ -433,7 +433,7 @@ internal class StubBasedFirMemberDeserializer(
             }
 
             property.contextReceiverList?.contextParameters()?.mapTo(contextParameters) {
-                local.memberDeserializer.loadContextReceiver(it, symbol)
+                local.memberDeserializer.loadContextParameter(it, symbol)
             }
         }.apply {
             val stub = property.stub ?: loadStubByElement(property)
@@ -478,22 +478,14 @@ internal class StubBasedFirMemberDeserializer(
         }
     }
 
-    private fun loadContextReceiver(parameter: KtParameter, containingDeclarationSymbol: FirBasedSymbol<*>): FirValueParameter {
-        return buildValueParameter {
-            this.source = KtRealPsiSourceElement(parameter)
-            this.moduleData = c.moduleData
-            this.origin = initialOrigin
-            this.name = if (parameter.name == "_") SpecialNames.UNDERSCORE_FOR_UNUSED_VAR else parameter.nameAsSafeName
-            this.symbol = FirValueParameterSymbol()
-            this.returnTypeRef = parameter.typeReference?.toTypeRef(c) ?: errorWithAttachment("KtParameter doesn't have type") {
-                withPsiEntry("ktParameter", parameter)
-                withFirSymbolEntry("functionSymbol", containingDeclarationSymbol)
-            }
-            this.containingDeclarationSymbol = containingDeclarationSymbol
-            this.valueParameterKind = FirValueParameterKind.ContextParameter
-            this.resolvePhase = FirResolvePhase.ANALYZED_DEPENDENCIES
-        }
-    }
+    private fun loadContextParameter(
+        parameter: KtParameter,
+        containingDeclarationSymbol: FirCallableSymbol<*>,
+    ): FirValueParameter = loadValueParameter(
+        parameter = parameter,
+        containingSymbol = containingDeclarationSymbol,
+        kind = FirValueParameterKind.ContextParameter,
+    )
 
     internal fun createContextReceiversForClass(
         classOrObject: KtClassOrObject,
@@ -583,7 +575,7 @@ internal class StubBasedFirMemberDeserializer(
             }
 
             function.contextReceiverList?.contextParameters()?.mapTo(contextParameters) {
-                local.memberDeserializer.loadContextReceiver(it, symbol)
+                local.memberDeserializer.loadContextParameter(it, symbol)
             }
         }.apply {
             setLazyPublishedVisibility(c.session)
@@ -685,6 +677,7 @@ internal class StubBasedFirMemberDeserializer(
         loadValueParameter(
             parameter = parameter,
             containingSymbol = functionSymbol,
+            kind = FirValueParameterKind.Regular,
             forceDefaultValue = forceDefaultValue,
         )
     }
@@ -692,8 +685,10 @@ internal class StubBasedFirMemberDeserializer(
     private fun loadValueParameter(
         parameter: KtParameter,
         containingSymbol: FirCallableSymbol<*>,
+        kind: FirValueParameterKind,
         forceDefaultValue: Boolean = false,
     ): FirValueParameter = buildValueParameter {
+        valueParameterKind = kind
         source = KtRealPsiSourceElement(parameter)
         moduleData = c.moduleData
         containingDeclarationSymbol = containingSymbol
@@ -709,7 +704,12 @@ internal class StubBasedFirMemberDeserializer(
             returnTypeRef = returnTypeRef.withReplacedReturnType(returnTypeRef.coneType.createOutArrayType())
         }
 
-        this.name = parameter.nameAsSafeName
+        val name = parameter.name
+        this.name = if (name == "_") {
+            SpecialNames.UNDERSCORE_FOR_UNUSED_VAR
+        } else {
+            KtPsiUtil.safeName(name)
+        }
         symbol = FirValueParameterSymbol()
         resolvePhase = FirResolvePhase.ANALYZED_DEPENDENCIES
         defaultValue = if (forceDefaultValue || parameter.hasDefaultValue()) {

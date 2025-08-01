@@ -342,20 +342,32 @@ class TypeClsStubBuilder(private val c: ClsStubBuilderContext) {
         callableProto: MessageLite,
         parameters: List<ProtoBuf.ValueParameter>,
         container: ProtoContainer,
-        callableKind: AnnotatedCallableKind = callableProto.annotatedCallableKind
+        callableKind: AnnotatedCallableKind = callableProto.annotatedCallableKind,
     ) {
         val parameterListStub = KotlinPlaceHolderStubImpl<KtParameterList>(parent, KtStubElementTypes.VALUE_PARAMETER_LIST)
+        createValueParameterStubs(parameters, parameterListStub, container, callableProto, callableKind, isContextParameter = false)
+    }
+
+    fun createValueParameterStubs(
+        parameters: List<ProtoBuf.ValueParameter>,
+        parameterParent: StubElement<out PsiElement>,
+        container: ProtoContainer,
+        callableProto: MessageLite,
+        callableKind: AnnotatedCallableKind,
+        isContextParameter: Boolean,
+    ) {
         for ((index, valueParameterProto) in parameters.withIndex()) {
             val parameterName = computeParameterName(c.nameResolver.getName(valueParameterProto.name))
             val hasDefaultValue = Flags.DECLARES_DEFAULT_VALUE.get(valueParameterProto.flags)
             val parameterStub = KotlinParameterStubImpl(
-                parameterListStub,
+                parameterParent,
                 name = parameterName.ref(),
                 fqName = null,
                 hasDefaultValue = hasDefaultValue,
                 hasValOrVar = false,
-                isMutable = false
+                isMutable = false,
             )
+
             val varargElementType = valueParameterProto.varargElementType(c.typeTable)
             val typeProto = varargElementType ?: valueParameterProto.type(c.typeTable)
             val modifiers = arrayListOf<KtModifierKeywordToken>()
@@ -377,9 +389,24 @@ class TypeClsStubBuilder(private val c: ClsStubBuilderContext) {
             )
 
             if (Flags.HAS_ANNOTATIONS.get(valueParameterProto.flags)) {
-                val parameterAnnotations = c.components.annotationLoader.loadValueParameterAnnotations(
-                    container, callableProto, callableKind, index, valueParameterProto
-                )
+                val parameterAnnotations = if (isContextParameter) {
+                    c.components.annotationLoader.loadContextParameterAnnotations(
+                        container = container,
+                        callableProto = callableProto,
+                        kind = callableKind,
+                        parameterIndex = index,
+                        proto = valueParameterProto,
+                    )
+                } else {
+                    c.components.annotationLoader.loadValueParameterAnnotations(
+                        container = container,
+                        callableProto = callableProto,
+                        kind = callableKind,
+                        parameterIndex = index,
+                        proto = valueParameterProto,
+                    )
+                }
+
                 if (parameterAnnotations.isNotEmpty()) {
                     createAnnotationStubs(parameterAnnotations, modifierList ?: createEmptyModifierListStub(parameterStub))
                 }
