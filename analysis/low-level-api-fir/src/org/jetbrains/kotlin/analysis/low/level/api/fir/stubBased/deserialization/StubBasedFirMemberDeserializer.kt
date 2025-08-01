@@ -51,7 +51,7 @@ internal class StubBasedFirDeserializationContext(
     val outerClassSymbol: FirRegularClassSymbol?,
     val outerTypeParameters: List<FirTypeParameterSymbol>,
     val initialOrigin: FirDeclarationOrigin,
-    val classLikeDeclaration: KtClassLikeDeclaration? = null
+    val classLikeDeclaration: KtClassLikeDeclaration? = null,
 ) {
     val session: FirSession get() = moduleData.session
 
@@ -65,7 +65,7 @@ internal class StubBasedFirDeserializationContext(
         outerClassSymbol: FirRegularClassSymbol? = this.outerClassSymbol,
         annotationDeserializer: StubBasedAnnotationDeserializer = this.annotationDeserializer,
         capturesTypeParameters: Boolean = true,
-        containingDeclarationSymbol: FirBasedSymbol<*>? = outerClassSymbol
+        containingDeclarationSymbol: FirBasedSymbol<*>? = outerClassSymbol,
     ): StubBasedFirDeserializationContext = StubBasedFirDeserializationContext(
         moduleData = moduleData,
         packageFqName = packageFqName,
@@ -112,7 +112,7 @@ internal class StubBasedFirDeserializationContext(
             annotationDeserializer: StubBasedAnnotationDeserializer,
             containerSource: DeserializedContainerSource?,
             outerClassSymbol: FirRegularClassSymbol,
-            initialOrigin: FirDeclarationOrigin
+            initialOrigin: FirDeclarationOrigin,
         ): StubBasedFirDeserializationContext = createRootContext(
             moduleData,
             annotationDeserializer,
@@ -134,7 +134,7 @@ internal class StubBasedFirDeserializationContext(
             containerSource: DeserializedContainerSource?,
             outerClassSymbol: FirRegularClassSymbol?,
             containingDeclarationSymbol: FirBasedSymbol<*>?,
-            initialOrigin: FirDeclarationOrigin
+            initialOrigin: FirDeclarationOrigin,
         ): StubBasedFirDeserializationContext = StubBasedFirDeserializationContext(
             moduleData,
             packageFqName,
@@ -180,7 +180,7 @@ internal class StubBasedFirDeserializationContext(
 
 internal class StubBasedFirMemberDeserializer(
     private val c: StubBasedFirDeserializationContext,
-    private val initialOrigin: FirDeclarationOrigin
+    private val initialOrigin: FirDeclarationOrigin,
 ) {
 
     fun loadTypeAlias(typeAlias: KtTypeAlias, aliasSymbol: FirTypeAliasSymbol, scopeProvider: FirScopeProvider): FirTypeAlias {
@@ -535,7 +535,7 @@ internal class StubBasedFirMemberDeserializer(
         function: KtNamedFunction,
         classSymbol: FirClassSymbol<*>? = null,
         session: FirSession,
-        existingSymbol: FirNamedFunctionSymbol? = null
+        existingSymbol: FirNamedFunctionSymbol? = null,
     ): FirSimpleFunction {
         val callableName = function.nameAsSafeName
         val callableId = CallableId(c.packageFqName, c.relativeClassName, callableName)
@@ -601,7 +601,7 @@ internal class StubBasedFirMemberDeserializer(
     fun loadConstructor(
         constructor: KtConstructor<*>,
         classOrObject: KtClassOrObject,
-        classBuilder: FirRegularClassBuilder
+        classBuilder: FirRegularClassBuilder,
     ): FirConstructor {
         val relativeClassName = c.relativeClassName!!
         val callableId = CallableId(c.packageFqName, relativeClassName, relativeClassName.shortName())
@@ -655,7 +655,7 @@ internal class StubBasedFirMemberDeserializer(
             valueParameters += local.memberDeserializer.valueParameters(
                 constructor.valueParameters,
                 symbol,
-                addDefaultValue = classBuilder.symbol.classId == StandardClassIds.Enum
+                forceDefaultValue = classBuilder.symbol.classId == StandardClassIds.Enum
             )
             annotations +=
                 c.annotationDeserializer.loadAnnotations(constructor)
@@ -680,39 +680,47 @@ internal class StubBasedFirMemberDeserializer(
     private fun valueParameters(
         valueParameters: List<KtParameter>,
         functionSymbol: FirFunctionSymbol<*>,
-        addDefaultValue: Boolean = false
-    ): List<FirValueParameter> {
-        return valueParameters.map { ktParameter ->
-            val name = ktParameter.nameAsSafeName
-            buildValueParameter {
-                source = KtRealPsiSourceElement(ktParameter)
-                moduleData = c.moduleData
-                this.containingDeclarationSymbol = functionSymbol
-                origin = initialOrigin
-                returnTypeRef =
-                    ktParameter.typeReference?.toTypeRef(c)
-                        ?: errorWithAttachment("KtParameter doesn't have type") {
-                            withPsiEntry("ktParameter", ktParameter)
-                            withFirSymbolEntry("functionSymbol", functionSymbol)
-                        }
-                isVararg = ktParameter.isVarArg
-                if (isVararg) {
-                    returnTypeRef = returnTypeRef.withReplacedReturnType(returnTypeRef.coneType.createOutArrayType())
-                }
-                this.name = name
-                symbol = FirValueParameterSymbol()
-                resolvePhase = FirResolvePhase.ANALYZED_DEPENDENCIES
+        forceDefaultValue: Boolean = false,
+    ): List<FirValueParameter> = valueParameters.map { parameter ->
+        loadValueParameter(
+            parameter = parameter,
+            containingSymbol = functionSymbol,
+            forceDefaultValue = forceDefaultValue,
+        )
+    }
 
-                defaultValue = if (ktParameter.hasDefaultValue() || addDefaultValue) {
-                    buildExpressionStub()
-                } else null
-                isCrossinline = ktParameter.hasModifier(KtTokens.CROSSINLINE_KEYWORD)
-                isNoinline = ktParameter.hasModifier(KtTokens.NOINLINE_KEYWORD)
-                annotations += c.annotationDeserializer.loadAnnotations(
-                    ktParameter
-                )
+    private fun loadValueParameter(
+        parameter: KtParameter,
+        containingSymbol: FirCallableSymbol<*>,
+        forceDefaultValue: Boolean = false,
+    ): FirValueParameter = buildValueParameter {
+        source = KtRealPsiSourceElement(parameter)
+        moduleData = c.moduleData
+        containingDeclarationSymbol = containingSymbol
+        origin = initialOrigin
+        returnTypeRef = parameter.typeReference?.toTypeRef(c)
+            ?: errorWithAttachment("KtParameter doesn't have type") {
+                withPsiEntry("parameter", parameter)
+                withFirSymbolEntry("containingSymbol", containingSymbol)
             }
-        }.toList()
+
+        isVararg = parameter.isVarArg
+        if (isVararg) {
+            returnTypeRef = returnTypeRef.withReplacedReturnType(returnTypeRef.coneType.createOutArrayType())
+        }
+
+        this.name = parameter.nameAsSafeName
+        symbol = FirValueParameterSymbol()
+        resolvePhase = FirResolvePhase.ANALYZED_DEPENDENCIES
+        defaultValue = if (forceDefaultValue || parameter.hasDefaultValue()) {
+            buildExpressionStub()
+        } else {
+            null
+        }
+
+        isCrossinline = parameter.hasModifier(KtTokens.CROSSINLINE_KEYWORD)
+        isNoinline = parameter.hasModifier(KtTokens.NOINLINE_KEYWORD)
+        annotations += c.annotationDeserializer.loadAnnotations(parameter)
     }
 
     private fun KtTypeReference.toTypeRef(context: StubBasedFirDeserializationContext): FirTypeRef =
@@ -721,7 +729,7 @@ internal class StubBasedFirMemberDeserializer(
     fun loadEnumEntry(
         declaration: KtEnumEntry,
         symbol: FirRegularClassSymbol,
-        classId: ClassId
+        classId: ClassId,
     ): FirEnumEntry {
         val enumEntryName = declaration.name
             ?: errorWithAttachment("Enum entry doesn't provide name") {
