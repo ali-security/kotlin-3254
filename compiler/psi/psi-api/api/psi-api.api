@@ -1396,20 +1396,15 @@ public class org/jetbrains/kotlin/psi/KtDestructuringDeclaration : org/jetbrains
 	public fun isVar ()Z
 }
 
-public class org/jetbrains/kotlin/psi/KtDestructuringDeclarationEntry : org/jetbrains/kotlin/psi/KtVariableDeclaration {
+public final class org/jetbrains/kotlin/psi/KtDestructuringDeclarationEntry : org/jetbrains/kotlin/psi/KtNamedDeclarationNotStubbed, org/jetbrains/kotlin/psi/KtVariableDeclaration {
 	public fun <init> (Lcom/intellij/lang/ASTNode;)V
 	public fun accept (Lorg/jetbrains/kotlin/psi/KtVisitor;Ljava/lang/Object;)Ljava/lang/Object;
 	public fun getColon ()Lcom/intellij/psi/PsiElement;
 	public fun getFqName ()Lorg/jetbrains/kotlin/name/FqName;
 	public synthetic fun getInitializer ()Lorg/jetbrains/kotlin/psi/KtExpression;
 	public fun getInitializer ()Lorg/jetbrains/kotlin/psi/KtNameReferenceExpression;
-	public synthetic fun getName ()Ljava/lang/String;
-	public synthetic fun getNameAsName ()Lorg/jetbrains/kotlin/name/Name;
-	public synthetic fun getNameAsSafeName ()Lorg/jetbrains/kotlin/name/Name;
-	public synthetic fun getNameIdentifier ()Lcom/intellij/psi/PsiElement;
-	public fun getOwnValOrVarKeyword ()Lcom/intellij/psi/PsiElement;
+	public final fun getOwnValOrVarKeyword ()Lcom/intellij/psi/PsiElement;
 	public fun getReceiverTypeReference ()Lorg/jetbrains/kotlin/psi/KtTypeReference;
-	public synthetic fun getTextOffset ()I
 	public fun getTypeConstraintList ()Lorg/jetbrains/kotlin/psi/KtTypeConstraintList;
 	public fun getTypeConstraints ()Ljava/util/List;
 	public fun getTypeParameterList ()Lorg/jetbrains/kotlin/psi/KtTypeParameterList;
@@ -1421,7 +1416,6 @@ public class org/jetbrains/kotlin/psi/KtDestructuringDeclarationEntry : org/jetb
 	public fun getValueParameters ()Ljava/util/List;
 	public fun hasInitializer ()Z
 	public fun isVar ()Z
-	public synthetic fun setName (Ljava/lang/String;)Lcom/intellij/psi/PsiElement;
 	public fun setTypeReference (Lorg/jetbrains/kotlin/psi/KtTypeReference;)Lorg/jetbrains/kotlin/psi/KtTypeReference;
 }
 
@@ -1647,12 +1641,7 @@ public abstract class org/jetbrains/kotlin/psi/KtFunctionNotStubbed : org/jetbra
 	public fun <init> (Lcom/intellij/lang/ASTNode;)V
 	public fun getBodyExpression ()Lorg/jetbrains/kotlin/psi/KtExpression;
 	public fun getColon ()Lcom/intellij/psi/PsiElement;
-	public synthetic fun getName ()Ljava/lang/String;
-	public synthetic fun getNameAsName ()Lorg/jetbrains/kotlin/name/Name;
-	public synthetic fun getNameAsSafeName ()Lorg/jetbrains/kotlin/name/Name;
-	public synthetic fun getNameIdentifier ()Lcom/intellij/psi/PsiElement;
 	public fun getReceiverTypeReference ()Lorg/jetbrains/kotlin/psi/KtTypeReference;
-	public synthetic fun getTextOffset ()I
 	public synthetic fun getTypeConstraintList ()Lorg/jetbrains/kotlin/psi/KtTypeConstraintList;
 	public synthetic fun getTypeConstraints ()Ljava/util/List;
 	public synthetic fun getTypeParameterList ()Lorg/jetbrains/kotlin/psi/KtTypeParameterList;
@@ -1662,7 +1651,6 @@ public abstract class org/jetbrains/kotlin/psi/KtFunctionNotStubbed : org/jetbra
 	public fun getValueParameters ()Ljava/util/List;
 	public fun hasDeclaredReturnType ()Z
 	public fun isLocal ()Z
-	public synthetic fun setName (Ljava/lang/String;)Lcom/intellij/psi/PsiElement;
 	public fun setTypeReference (Lorg/jetbrains/kotlin/psi/KtTypeReference;)Lorg/jetbrains/kotlin/psi/KtTypeReference;
 }
 
@@ -1907,6 +1895,16 @@ public abstract interface class org/jetbrains/kotlin/psi/KtNamed {
 public abstract interface class org/jetbrains/kotlin/psi/KtNamedDeclaration : com/intellij/psi/PsiNameIdentifierOwner, org/jetbrains/kotlin/psi/KtDeclaration, org/jetbrains/kotlin/psi/KtNamed, org/jetbrains/kotlin/psi/KtStatementExpression {
 	public abstract fun getFqName ()Lorg/jetbrains/kotlin/name/FqName;
 	public abstract fun getNameAsSafeName ()Lorg/jetbrains/kotlin/name/Name;
+}
+
+public abstract class org/jetbrains/kotlin/psi/KtNamedDeclarationNotStubbed : org/jetbrains/kotlin/psi/KtDeclarationImpl, org/jetbrains/kotlin/psi/KtNamedDeclaration {
+	public fun <init> (Lcom/intellij/lang/ASTNode;)V
+	public fun getName ()Ljava/lang/String;
+	public fun getNameAsName ()Lorg/jetbrains/kotlin/name/Name;
+	public fun getNameAsSafeName ()Lorg/jetbrains/kotlin/name/Name;
+	public fun getNameIdentifier ()Lcom/intellij/psi/PsiElement;
+	public fun getTextOffset ()I
+	public fun setName (Ljava/lang/String;)Lcom/intellij/psi/PsiElement;
 }
 
 public final class org/jetbrains/kotlin/psi/KtNamedDeclarationUtil {

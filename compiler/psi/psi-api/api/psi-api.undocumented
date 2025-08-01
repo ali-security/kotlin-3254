@@ -565,7 +565,6 @@ org.jetbrains.kotlin.psi.KtDestructuringDeclaration:getRPar()
 org.jetbrains.kotlin.psi.KtDestructuringDeclaration:getTrailingComma()
 org.jetbrains.kotlin.psi.KtDestructuringDeclaration:isVar()
 org.jetbrains.kotlin.psi.KtDestructuringDeclarationEntry
-org.jetbrains.kotlin.psi.KtDestructuringDeclarationEntry:constructor(ASTNode)
 org.jetbrains.kotlin.psi.KtDoWhileExpression
 org.jetbrains.kotlin.psi.KtDoWhileExpression:constructor(ASTNode)
 org.jetbrains.kotlin.psi.KtDoWhileExpression:getWhileKeyword()
@@ -640,7 +639,7 @@ org.jetbrains.kotlin.psi.KtForExpression:getInKeyword()
 org.jetbrains.kotlin.psi.KtForExpression:getLoopParameter()
 org.jetbrains.kotlin.psi.KtForExpression:getLoopRange()
 org.jetbrains.kotlin.psi.KtFunction
-org.jetbrains.kotlin.psi.KtFunction:isLocal()
+org.jetbrains.kotlin.psi.KtFunction.isLocal
 org.jetbrains.kotlin.psi.KtFunctionLiteral
 org.jetbrains.kotlin.psi.KtFunctionLiteral:constructor(ASTNode)
 org.jetbrains.kotlin.psi.KtFunctionLiteral:getArrow()
@@ -769,6 +768,8 @@ org.jetbrains.kotlin.psi.KtNamed:getNameAsName()
 org.jetbrains.kotlin.psi.KtNamedDeclaration
 org.jetbrains.kotlin.psi.KtNamedDeclaration:getFqName()
 org.jetbrains.kotlin.psi.KtNamedDeclaration:getNameAsSafeName()
+org.jetbrains.kotlin.psi.KtNamedDeclarationNotStubbed
+org.jetbrains.kotlin.psi.KtNamedDeclarationNotStubbed:constructor(ASTNode)
 org.jetbrains.kotlin.psi.KtNamedDeclarationUtil
 org.jetbrains.kotlin.psi.KtNamedDeclarationUtil:getParentFqName(KtNamedDeclaration)
 org.jetbrains.kotlin.psi.KtNamedDeclarationUtil:getUnsafeFQName(KtNamedDeclaration)
