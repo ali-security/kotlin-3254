@@ -168,6 +168,7 @@ object WasmBackendPipelinePhase : WebBackendPipelinePhase<WasmBackendPipelineArt
             compileSingleModule(
                 configuration = configuration,
                 module = moduleWithSelectedKLibOnTop,
+                wasmDebug = wasmDebug,
                 outputDir = outputDir,
             )
         }
@@ -258,6 +259,7 @@ object WasmBackendPipelinePhase : WebBackendPipelinePhase<WasmBackendPipelineArt
     private fun compileSingleModule(
         configuration: CompilerConfiguration,
         module: ModulesStructure,
+        wasmDebug: Boolean,
         outputDir: File,
     ): WasmCompilerResult {
         val performanceManager = configuration.perfManager
@@ -287,6 +289,7 @@ object WasmBackendPipelinePhase : WebBackendPipelinePhase<WasmBackendPipelineArt
                 backendContext = backendContext,
                 signatureRetriever = irFactory,
                 generateWat = configuration.get(WasmConfigurationKeys.WASM_GENERATE_WAT, false),
+                wasmDebug = wasmDebug,
             )
 
             writeCompilationResult(
@@ -306,6 +309,7 @@ fun compileWasmLoweredFragmentsForSingleModule(
     backendContext: WasmBackendContext,
     signatureRetriever: IdSignatureRetriever,
     generateWat: Boolean,
+    wasmDebug: Boolean,
 ): WasmCompilerResult {
     val mainModuleFragment = loweredIrFragments.last()
     val importModuleName = mainModuleFragment.name.asString()
@@ -318,7 +322,6 @@ fun compileWasmLoweredFragmentsForSingleModule(
         signatureRetriever,
         allowIncompleteImplementations = false,
         skipCommentInstructions = false,
-        useStringPool = isStdlib,
         inlineUnitGetter = isStdlib,
     )
 
@@ -330,7 +333,10 @@ fun compileWasmLoweredFragmentsForSingleModule(
     // This signature needed to dynamically load module services
     @OptIn(UnsafeDuringIrConstructionAPI::class)
     val additionalSignatureToImport =
-        if (isStdlib) emptySet() else setOf(signatureRetriever.declarationSignature(backendContext.wasmSymbols.registerModuleDescriptor.owner)!!)
+        if (isStdlib) emptySet() else setOf(
+            signatureRetriever.declarationSignature(backendContext.wasmSymbols.registerModuleDescriptor.owner)!!,
+            signatureRetriever.declarationSignature(backendContext.wasmSymbols.createString.owner)!!,
+        )
 
     val importedDeclarations = getAllReferencedDeclarations(mainModuleFileFragment, additionalSignatureToImport)
 
@@ -348,7 +354,7 @@ fun compileWasmLoweredFragmentsForSingleModule(
         configuration = configuration,
         typeScriptFragment = null,
         baseFileName = mainModuleFragment.outputFileName,
-        emitNameSection = false,
+        emitNameSection = wasmDebug,
         generateWat = generateWat,
         generateSourceMaps = false,
         generateDwarf = false,
@@ -356,6 +362,5 @@ fun compileWasmLoweredFragmentsForSingleModule(
         stdlibModuleName = loweredIrFragments.first().name.asString().takeIf { !isStdlib },
         dependenciesModules = dependenciesModules,
         initializeUnit = isStdlib,
-        initializeStringPool = isStdlib,
     )
 }

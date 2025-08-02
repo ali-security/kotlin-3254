@@ -600,7 +600,8 @@ class WasmDeserializer(inputStream: InputStream, private val skipLocalNames: Boo
         jsFuns = deserializeJsFuns(),
         jsModuleImports = deserializeJsModuleImports(),
         exports = deserializeExports(),
-        stringPoolSize = deserializeNullableIntSymbol(),
+        createStringLiteral = deserializeNullableFunctionSymbol(),
+        createStringLiteralType = deserializeNullableFunctionTypeSymbol(),
         mainFunctionWrappers = deserializeMainFunctionWrappers(),
         testFunctionDeclarators = deserializeTestFunctionDeclarators(),
         equivalentFunctions = deserializeClosureCallExports(),
@@ -610,7 +611,6 @@ class WasmDeserializer(inputStream: InputStream, private val skipLocalNames: Boo
         specialITableTypes = deserializeInterfaceTableTypes(),
         rttiElements = deserializeRttiElements(),
         objectInstanceFieldInitializers = deserializeList(::deserializeIdSignature),
-        stringPoolFieldInitializer = deserializeNullable(::deserializeIdSignature),
         nonConstantFieldInitializers = deserializeList(::deserializeIdSignature),
     )
 
@@ -627,7 +627,8 @@ class WasmDeserializer(inputStream: InputStream, private val skipLocalNames: Boo
     private fun deserializeJsFuns() = deserializeMap(::deserializeIdSignature, ::deserializeJsCodeSnippet)
     private fun deserializeJsModuleImports() = deserializeMap(::deserializeIdSignature, ::deserializeString)
     private fun deserializeExports() = deserializeList(::deserializeExport)
-    private fun deserializeNullableIntSymbol() = deserializeNullable { deserializeSymbol(::deserializeInt) }
+    private fun deserializeNullableFunctionSymbol() = deserializeNullable { deserializeSymbol(::deserializeFunction) }
+    private fun deserializeNullableFunctionTypeSymbol() = deserializeNullable { deserializeSymbol(::deserializeFunctionType) }
     private fun deserializeMainFunctionWrappers() = deserializeList(::deserializeIdSignature)
     private fun deserializeTestFunctionDeclarators() = deserializeList(::deserializeIdSignature)
     private fun deserializeClosureCallExports() = deserializeList { deserializePair(::deserializeString, ::deserializeIdSignature) }
@@ -642,6 +643,7 @@ class WasmDeserializer(inputStream: InputStream, private val skipLocalNames: Boo
                 unitGetInstance = deserializeNullable(::deserializeIdSignature),
                 runRootSuites = deserializeNullable(::deserializeIdSignature),
                 registerModuleDescriptor = deserializeNullable(::deserializeIdSignature),
+                createString = deserializeNullable(::deserializeIdSignature),
             )
         }
 

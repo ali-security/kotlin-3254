@@ -621,7 +621,8 @@ class WasmSerializer(outputStream: OutputStream) {
             serializeMap(jsFuns, ::serializeIdSignature, ::serializeJsCodeSnippet)
             serializeMap(jsModuleImports, ::serializeIdSignature, ::serializeString)
             serializeList(exports, ::serializeWasmExport)
-            serializeNullable(stringPoolSize) { serializeWasmSymbolReadOnly(it, ::serializeInt) }
+            serializeNullable(createStringLiteral) { serializeWasmSymbolReadOnly(it, ::serializeWasmFunction) }
+            serializeNullable(createStringLiteralType) { serializeWasmSymbolReadOnly(it, ::serializeWasmFunctionType) }
             serializeList(mainFunctionWrappers, ::serializeIdSignature)
             serializeList(testFunctionDeclarators, ::serializeIdSignature)
             serializeList(equivalentFunctions) { serializePair(it, ::serializeString, ::serializeIdSignature) }
@@ -631,7 +632,6 @@ class WasmSerializer(outputStream: OutputStream) {
             serializeNullable(specialITableTypes, ::serializeInterfaceTableTypes)
             serializeNullable(rttiElements, ::serializeRttiElements)
             serializeList(objectInstanceFieldInitializers, ::serializeIdSignature)
-            serializeNullable(stringPoolFieldInitializer, ::serializeIdSignature)
             serializeList(nonConstantFieldInitializers, ::serializeIdSignature)
         }
 
@@ -663,6 +663,7 @@ class WasmSerializer(outputStream: OutputStream) {
         serializeNullable(builtinIdSignatures.unitGetInstance, ::serializeIdSignature)
         serializeNullable(builtinIdSignatures.runRootSuites, ::serializeIdSignature)
         serializeNullable(builtinIdSignatures.registerModuleDescriptor, ::serializeIdSignature)
+        serializeNullable(builtinIdSignatures.createString, ::serializeIdSignature)
     }
 
     private fun serializeClassAssociatedObjects(classAssociatedObjects: ClassAssociatedObjects) {

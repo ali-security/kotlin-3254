@@ -21,7 +21,6 @@ class WasmModuleFragmentGenerator(
     private val idSignatureRetriever: IdSignatureRetriever,
     private val allowIncompleteImplementations: Boolean,
     private val skipCommentInstructions: Boolean,
-    private val useStringPool: Boolean = true,
     private val inlineUnitGetter: Boolean = true,
 ) {
     fun generateModuleAsSingleFileFragment(
@@ -64,7 +63,6 @@ class WasmModuleFragmentGenerator(
                 wasmFileCodegenContext,
                 wasmModuleTypeTransformer,
                 skipCommentInstructions,
-                useStringPool,
                 inlineUnitGetter,
             )
         }
@@ -79,7 +77,6 @@ internal fun compileIrFile(
     allowIncompleteImplementations: Boolean,
     fragmentTag: String?,
     skipCommentInstructions: Boolean,
-    useStringPool: Boolean,
     inlineUnitGetter: Boolean,
 ): WasmCompiledFileFragment {
     val wasmFileFragment = WasmCompiledFileFragment(fragmentTag)
@@ -93,7 +90,6 @@ internal fun compileIrFile(
         wasmFileCodegenContext,
         wasmModuleTypeTransformer,
         skipCommentInstructions,
-        useStringPool,
         inlineUnitGetter,
     )
     return wasmFileFragment
@@ -107,7 +103,6 @@ private fun compileIrFile(
     wasmFileCodegenContext: WasmFileCodegenContext,
     wasmModuleTypeTransformer: WasmModuleTypeTransformer,
     skipCommentInstructions: Boolean,
-    useStringPool: Boolean,
     inlineUnitGetter: Boolean,
 ) {
     val generator = DeclarationGenerator(
@@ -117,7 +112,6 @@ private fun compileIrFile(
         wasmModuleMetadataCache,
         allowIncompleteImplementations,
         skipCommentInstructions,
-        useStringPool,
         inlineUnitGetter,
     )
     for (irDeclaration in irFile.declarations) {
@@ -145,9 +139,6 @@ private fun compileIrFile(
     }
     fileContext.objectInstanceFieldInitializer?.apply {
         wasmFileCodegenContext.addObjectInstanceFieldInitializer(symbol)
-    }
-    fileContext.stringPoolFieldInitializer?.apply {
-        wasmFileCodegenContext.setStringPoolFieldInitializer(symbol)
     }
     fileContext.nonConstantFieldInitializer?.apply {
         wasmFileCodegenContext.addNonConstantFieldInitializers(symbol)
@@ -201,6 +192,10 @@ private fun WasmBackendContext.defineBuiltinSignatures(irFile: IrFile, wasmFileC
         irFile == it.owner.fileOrNull
     }
 
+    val createString = wasmSymbols.createString.takeIf {
+        irFile == it.owner.fileOrNull
+    }
+
     wasmFileCodegenContext.defineBuiltinIdSignatures(
         throwable = throwableClass,
         kotlinAny = kotlinAnyClass,
@@ -208,5 +203,6 @@ private fun WasmBackendContext.defineBuiltinSignatures(irFile: IrFile, wasmFileC
         unitGetInstance = unitGetInstance?.symbol,
         runRootSuites = runRootSuites,
         registerModuleDescriptor = registerModuleDescriptor,
+        createString = createString,
     )
 }

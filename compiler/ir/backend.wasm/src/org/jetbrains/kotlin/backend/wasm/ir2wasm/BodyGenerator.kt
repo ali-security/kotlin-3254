@@ -37,7 +37,6 @@ class BodyGenerator(
     private val functionContext: WasmFunctionCodegenContext,
     private val wasmModuleMetadataCache: WasmModuleMetadataCache,
     private val wasmModuleTypeTransformer: WasmModuleTypeTransformer,
-    private val useStringPool: Boolean,
     private val inlineUnitGetter: Boolean,
 ) : IrVisitorVoid() {
     val body: WasmExpressionBuilder = functionContext.bodyGen
@@ -539,7 +538,7 @@ class BodyGenerator(
     }
 
     override fun visitConst(expression: IrConst): Unit =
-        generateConstExpression(expression, body, wasmFileCodegenContext, backendContext, expression.getSourceLocation(), useStringPool)
+        generateConstExpression(expression, body, wasmFileCodegenContext, backendContext, expression.getSourceLocation())
 
     override fun visitGetField(expression: IrGetField) {
         val field: IrField = expression.symbol.owner
@@ -985,6 +984,25 @@ class BodyGenerator(
                 body.buildStructGet(wasmFileCodegenContext.rttiType, rttiSuperClassFieldId, location)
             }
 
+            wasmSymbols.wasmGetRttiStringGetter -> {
+                val getStringFunctionType =
+                    WasmImmediate.TypeIdx(wasmFileCodegenContext.createStringLiteralType)
+
+                body.buildRefCastStatic(wasmFileCodegenContext.rttiType, location)
+                body.buildStructGet(wasmFileCodegenContext.rttiType, rttiStringGetterFieldId, location)
+
+                body.buildInstr(
+                    op = WasmOp.REF_CAST,
+                    location = location,
+                    getStringFunctionType
+                )
+                body.buildInstr(
+                    op = WasmOp.CALL_REF,
+                    location = location,
+                    getStringFunctionType,
+                )
+            }
+
             wasmSymbols.reflectionSymbols.wasmGetInterfaceVTableBodyImpl -> {
                 //This is implementation of getInterfaceVTable, so argument locals could be used from the call-site
                 //obj.interfacesArray
@@ -1144,10 +1162,6 @@ class BodyGenerator(
                     wasmFileCodegenContext.referenceGcType(call.typeArguments[0]!!.getRuntimeClass(irBuiltIns).symbol)
                 )
                 body.buildInstr(WasmOp.ARRAY_COPY, location, immediate, immediate)
-            }
-
-            wasmSymbols.stringGetPoolSize -> {
-                body.buildConstI32Symbol(wasmFileCodegenContext.stringPoolSize, location)
             }
 
             wasmSymbols.wasmArrayNewData0 -> {
@@ -1573,6 +1587,7 @@ class BodyGenerator(
         val vTableSpecialITableFieldId = WasmSymbol(0)
         val rttiImplementedIFacesFieldId = WasmSymbol(0)
         val rttiSuperClassFieldId = WasmSymbol(1)
+        val rttiStringGetterFieldId = WasmSymbol(10)
         private val exceptionTagId = WasmSymbol(0)
         private val relativeTryLevelForRethrowInFinallyBlock = WasmImmediate.LabelIdx(0)
     }

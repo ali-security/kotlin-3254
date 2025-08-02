@@ -64,7 +64,8 @@ class WasmLoweringSingleModuleFacade(testServices: TestServices) :
             loweredIrFragments = allModules,
             backendContext = backendContext,
             signatureRetriever = moduleInfo.symbolTable.irFactory as IdSignatureRetriever,
-            generateWat = generateWat
+            generateWat = generateWat,
+            wasmDebug = true,
         )
 
         return BinaryArtifacts.Wasm(

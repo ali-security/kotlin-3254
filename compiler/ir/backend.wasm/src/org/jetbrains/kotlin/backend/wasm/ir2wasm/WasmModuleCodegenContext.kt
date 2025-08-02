@@ -114,16 +114,16 @@ open class WasmFileCodegenContext(
         wasmFileFragment.jsModuleImports[irFunction.getReferenceKey()] = module
     }
 
-    val stringPoolSize: WasmSymbol<Int>
-        get() = wasmFileFragment.stringPoolSize
-            ?: WasmSymbol<Int>().also { wasmFileFragment.stringPoolSize = it }
+    val createStringLiteral: WasmSymbol<WasmFunction>
+        get() = wasmFileFragment.createStringLiteral
+            ?: WasmSymbol<WasmFunction>().also { wasmFileFragment.createStringLiteral = it }
+
+    val createStringLiteralType: WasmSymbol<WasmFunctionType>
+        get() = wasmFileFragment.createStringLiteralType
+            ?: WasmSymbol<WasmFunctionType>().also { wasmFileFragment.createStringLiteralType = it }
 
     fun addObjectInstanceFieldInitializer(initializer: IrFunctionSymbol) {
         wasmFileFragment.objectInstanceFieldInitializers.add(initializer.getReferenceKey())
-    }
-
-    fun setStringPoolFieldInitializer(initializer: IrFunctionSymbol) {
-        wasmFileFragment.stringPoolFieldInitializer = initializer.getReferenceKey()
     }
 
     fun addNonConstantFieldInitializers(initializer: IrFunctionSymbol) {
@@ -163,8 +163,9 @@ open class WasmFileCodegenContext(
         unitGetInstance: IrFunctionSymbol?,
         runRootSuites: IrFunctionSymbol?,
         registerModuleDescriptor: IrFunctionSymbol?,
+        createString: IrFunctionSymbol?,
     ) {
-        if (throwable != null || kotlinAny != null || jsToKotlinAnyAdapter != null || unitGetInstance != null || runRootSuites != null || registerModuleDescriptor != null) {
+        if (throwable != null || kotlinAny != null || jsToKotlinAnyAdapter != null || unitGetInstance != null || runRootSuites != null || registerModuleDescriptor != null || createString != null) {
             val originalSignatures = wasmFileFragment.builtinIdSignatures
             wasmFileFragment.builtinIdSignatures = BuiltinIdSignatures(
                 throwable = originalSignatures?.throwable
@@ -179,6 +180,8 @@ open class WasmFileCodegenContext(
                     ?: runRootSuites?.getReferenceKey(),
                 registerModuleDescriptor = originalSignatures?.registerModuleDescriptor
                     ?: registerModuleDescriptor?.getReferenceKey(),
+                createString = originalSignatures?.createString
+                    ?: createString?.getReferenceKey(),
             )
         }
     }

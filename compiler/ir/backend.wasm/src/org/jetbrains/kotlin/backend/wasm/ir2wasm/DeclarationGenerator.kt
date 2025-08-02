@@ -39,7 +39,6 @@ class DeclarationGenerator(
     private val wasmModuleMetadataCache: WasmModuleMetadataCache,
     private val allowIncompleteImplementations: Boolean,
     private val skipCommentInstructions: Boolean,
-    private val useStringPool: Boolean = true,
     private val inlineUnitGetter: Boolean = true,
 ) : IrVisitorVoid() {
     // Shortcuts
@@ -166,7 +165,6 @@ class DeclarationGenerator(
             functionCodegenContext,
             wasmModuleMetadataCache,
             wasmModuleTypeTransformer,
-            useStringPool,
             inlineUnitGetter,
         )
 
@@ -374,6 +372,17 @@ class DeclarationGenerator(
 
         if (wasmFileCodegenContext.handleRTTIWithImport(symbol, superType)) return
 
+        val fqnShouldBeEmitted = backendContext.configuration.languageVersionSettings.getFlag(allowFullyQualifiedNameInKClass)
+        val qualifier =
+            if (fqnShouldBeEmitted) {
+                (klass.originalFqName ?: klass.kotlinFqName).parentOrNull()?.asString() ?: ""
+            } else {
+                ""
+            }
+        val simpleName = klass.name.asString()
+        val (packageNameAddress, packageNamePoolId) = wasmFileCodegenContext.referenceStringLiteralAddressAndId(qualifier)
+        val (simpleNameAddress, simpleNamePoolId) = wasmFileCodegenContext.referenceStringLiteralAddressAndId(simpleName)
+
         val location = SourceLocation.NoLocation("Create instance of rtti struct")
         val initRttiGlobal = buildWasmExpression {
             interfaceTable(this, metadata, location)
@@ -383,39 +392,25 @@ class DeclarationGenerator(
                 buildRefNull(WasmHeapType.Simple.None, location)
             }
 
-            if (useStringPool) {
-                val fqnShouldBeEmitted = backendContext.configuration.languageVersionSettings.getFlag(allowFullyQualifiedNameInKClass)
-                val qualifier =
-                    if (fqnShouldBeEmitted) {
-                        (klass.originalFqName ?: klass.kotlinFqName).parentOrNull()?.asString() ?: ""
-                    } else {
-                        ""
-                    }
-                val simpleName = klass.name.asString()
-                val (packageNameAddress, packageNamePoolId) = wasmFileCodegenContext.referenceStringLiteralAddressAndId(qualifier)
-                val (simpleNameAddress, simpleNamePoolId) = wasmFileCodegenContext.referenceStringLiteralAddressAndId(simpleName)
+            buildConstI32Symbol(packageNameAddress, location)
+            buildConstI32(qualifier.length, location)
+            buildConstI32Symbol(packageNamePoolId, location)
 
-                buildConstI32Symbol(packageNameAddress, location)
-                buildConstI32(qualifier.length, location)
-                buildConstI32Symbol(packageNamePoolId, location)
-
-                buildConstI32Symbol(simpleNameAddress, location)
-                buildConstI32(simpleName.length, location)
-                buildConstI32Symbol(simpleNamePoolId, location)
-            } else {
-                buildConstI32(-1, location)
-                buildConstI32(-1, location)
-                buildConstI32(-1, location)
-                buildConstI32(-1, location)
-                buildConstI32(-1, location)
-                buildConstI32(-1, location)
-            }
+            buildConstI32Symbol(simpleNameAddress, location)
+            buildConstI32(simpleName.length, location)
+            buildConstI32Symbol(simpleNamePoolId, location)
 
             buildConstI64(wasmFileCodegenContext.referenceTypeId(symbol), location)
 
             val isAnonymousFlag = if (klass.isAnonymousObject) TYPE_INFO_FLAG_ANONYMOUS_CLASS else 0
             val isLocalFlag = if (klass.isOriginallyLocalClass) TYPE_INFO_FLAG_LOCAL_CLASS else 0
             buildConstI32(isAnonymousFlag or isLocalFlag, location)
+
+            buildInstr(
+                WasmOp.REF_FUNC,
+                location,
+                WasmImmediate.FuncIdx(wasmFileCodegenContext.createStringLiteral),
+            )
 
             buildStructNew(wasmFileCodegenContext.rttiType, location)
         }
@@ -573,7 +568,6 @@ class DeclarationGenerator(
                 wasmFileCodegenContext,
                 backendContext,
                 initValue.getSourceLocation(declaration.symbol, sourceFile),
-                useStringPool
             )
         } else {
             generateDefaultInitializerForType(wasmType, wasmExpressionGenerator)
@@ -625,7 +619,6 @@ fun generateConstExpression(
     context: WasmFileCodegenContext,
     backendContext: WasmBackendContext,
     location: SourceLocation,
-    useStringPool: Boolean,
 ) =
     when (val kind = expression.kind) {
         is IrConstKind.Null -> {
@@ -643,28 +636,12 @@ fun generateConstExpression(
         is IrConstKind.Double -> body.buildConstF64(expression.value as Double, location)
         is IrConstKind.String -> {
             val stringValue = expression.value as String
-
             body.commentGroupStart { "const string: \"$stringValue\"" }
-
             val (literalAddress, literalPoolId) = context.referenceStringLiteralAddressAndId(stringValue)
-            if (useStringPool) {
-                body.buildConstI32Symbol(literalPoolId, location)
-                body.buildConstI32Symbol(literalAddress, location)
-                body.buildConstI32(stringValue.length, location)
-                body.buildCall(context.referenceFunction(backendContext.wasmSymbols.stringGetLiteral), location)
-            } else {
-                body.buildConstI32Symbol(literalAddress, location)
-                body.buildConstI32(stringValue.length, location)
-
-                val createString = backendContext.wasmSymbols.createString
-                val wasmCharArrayType = createString.owner.parameters[0].type
-                val arrayGcType = WasmImmediate.GcType(
-                    context.referenceGcType(wasmCharArrayType.getRuntimeClass(backendContext.irBuiltIns).symbol)
-                )
-                body.buildInstr(WasmOp.ARRAY_NEW_DATA, location, arrayGcType, WasmImmediate.DataIdx(0))
-                body.buildCall(context.referenceFunction(createString), location)
-            }
-
+            body.buildConstI32Symbol(literalPoolId, location)
+            body.buildConstI32Symbol(literalAddress, location)
+            body.buildConstI32(stringValue.length, location)
+            body.buildCall(context.createStringLiteral, location)
             body.commentGroupEnd()
         }
     }

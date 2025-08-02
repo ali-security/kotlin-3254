@@ -171,7 +171,6 @@ fun compileWasm(
     stdlibModuleName: String? = null,
     dependenciesModules: List<ModuleImport.WasmModuleImport> = emptyList(),
     initializeUnit: Boolean = true,
-    initializeStringPool: Boolean = true,
 ): WasmCompilerResult {
     val isWasmJsTarget = configuration.get(WasmConfigurationKeys.WASM_TARGET) != WasmTarget.WASI
 
@@ -181,7 +180,7 @@ fun compileWasm(
         isWasmJsTarget,
     )
 
-    val linkedModule = wasmCompiledModuleFragment.linkWasmCompiledFragments(stdlibModuleName, initializeUnit, initializeStringPool)
+    val linkedModule = wasmCompiledModuleFragment.linkWasmCompiledFragments(stdlibModuleName, initializeUnit)
 
     val dwarfGeneratorForBinary = runIf(generateDwarf) {
         DwarfGenerator()

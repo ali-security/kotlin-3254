@@ -56,16 +56,18 @@ internal fun getQualifiedName(rtti: kotlin.wasm.internal.reftypes.structref): St
     return if (packageName.isEmpty()) typeName else "$packageName.$typeName"
 }
 
-internal fun getPackageName(rtti: kotlin.wasm.internal.reftypes.structref): String = stringLiteral(
+internal fun getPackageName(rtti: kotlin.wasm.internal.reftypes.structref): String = wasmGetRttiStringGetter(
+    poolId = wasmGetRttiIntField(4, rtti),
     startAddress = wasmGetRttiIntField(2, rtti),
     length = wasmGetRttiIntField(3, rtti),
-    poolId = wasmGetRttiIntField(4, rtti),
+    rtti = rtti,
 )
 
-internal fun getSimpleName(rtti: kotlin.wasm.internal.reftypes.structref): String = stringLiteral(
+internal fun getSimpleName(rtti: kotlin.wasm.internal.reftypes.structref): String = wasmGetRttiStringGetter(
+    poolId = wasmGetRttiIntField(7, rtti),
     startAddress = wasmGetRttiIntField(5, rtti),
     length = wasmGetRttiIntField(6, rtti),
-    poolId = wasmGetRttiIntField(7, rtti),
+    rtti = rtti,
 )
 
 internal fun getTypeId(rtti: kotlin.wasm.internal.reftypes.structref): Long =
@@ -112,4 +114,9 @@ internal fun wasmGetRttiLongField(intFieldIndex: Int, obj: kotlin.wasm.internal.
 @Suppress("UNUSED_PARAMETER")
 @ExcludedFromCodegen
 internal fun wasmGetRttiSuperClass(rtti: kotlin.wasm.internal.reftypes.structref): kotlin.wasm.internal.reftypes.structref? =
+    implementedAsIntrinsic
+
+@Suppress("UNUSED_PARAMETER")
+@ExcludedFromCodegen
+internal fun wasmGetRttiStringGetter(poolId: Int, startAddress: Int, length: Int, rtti: kotlin.wasm.internal.reftypes.structref): String =
     implementedAsIntrinsic

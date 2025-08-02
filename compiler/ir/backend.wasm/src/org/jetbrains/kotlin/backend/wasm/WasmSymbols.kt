@@ -226,9 +226,7 @@ class WasmSymbols(
     val boxIntrinsic: IrSimpleFunctionSymbol = getInternalFunction("boxIntrinsic")
     val unboxIntrinsic: IrSimpleFunctionSymbol = getInternalFunction("unboxIntrinsic")
 
-    val stringGetLiteral = getFunction("stringLiteral", StandardNames.BUILT_INS_PACKAGE_FQ_NAME)
     val createString = getFunction("createString", StandardNames.BUILT_INS_PACKAGE_FQ_NAME)
-    val stringGetPoolSize = getInternalFunction("stringGetPoolSize")
 
     val testFun = maybeGetFunction("test", kotlinTestPackageFqName)
     val suiteFun = maybeGetFunction("suite", kotlinTestPackageFqName)
@@ -242,6 +240,7 @@ class WasmSymbols(
     val wasmGetRttiLongField = getInternalFunction("wasmGetRttiLongField")
     val wasmGetRttiSuperClass = getInternalFunction("wasmGetRttiSuperClass")
     val wasmGetObjectRtti = getInternalFunction("wasmGetObjectRtti")
+    val wasmGetRttiStringGetter = getInternalFunction("wasmGetRttiStringGetter")
     val wasmArrayAnyIndexOfValue = getInternalFunction("wasmArrayAnyIndexOfValue")
 
     val wasmIsInterface = getInternalFunction("wasmIsInterface")
